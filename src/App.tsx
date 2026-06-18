@@ -1589,12 +1589,12 @@ export default function App() {
 
         <div className="relative flex flex-col items-center text-center space-y-10 lg:space-y-12 z-10 w-full px-6 max-w-2xl">
           
-          {/* Camera Video Feed (replacing central wave when active) */}
+          {/* Camera Video Feed (Picture-in-Picture floating style) */}
           {cameraEnabled && (
-            <div className={`relative w-full max-w-3xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border-4 transition-all duration-700 animate-in fade-in zoom-in-95`} style={{ borderColor: `rgba(${themeRgb}, 0.3)` }}>
+            <div className="fixed bottom-6 lg:bottom-10 right-6 lg:right-[350px] w-48 lg:w-72 aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border-2 transition-all duration-700 animate-in fade-in slide-in-from-bottom-10 z-50 hover:scale-105" style={{ borderColor: `rgba(${themeRgb}, 0.5)` }}>
               {/* We draw the canvas feed here or we can just use the video element directly using a second video element via stream */}
               <video 
-                autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" 
+                autoPlay playsInline muted className={`w-full h-full object-cover ${selectedDeviceId !== 'screen' ? 'scale-x-[-1]' : ''}`} 
                 ref={node => {
                   if (node && videoStreamRef.current && node.srcObject !== videoStreamRef.current) {
                     node.srcObject = videoStreamRef.current;
@@ -1605,26 +1605,15 @@ export default function App() {
                 }} 
               />
               
-              <div className="absolute top-4 left-4 bg-black/60 px-3 py-1.5 rounded-lg flex items-center gap-2 backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full animate-pulse bg-emerald-500" />
-                <span className="text-xs font-mono font-bold tracking-widest text-emerald-500">LIVE</span>
+              <div className="absolute top-2 left-2 bg-black/60 px-2 py-1 rounded-md flex items-center gap-1.5 backdrop-blur-md">
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-emerald-500" />
+                <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-500">LIVE</span>
               </div>
-              
-              {/* Overlay speaking visualizer small */}
-              {isSpeakingAnimation && (
-                <div className="absolute bottom-4 right-4 flex items-end gap-1 p-3 bg-black/50 rounded-xl backdrop-blur-sm">
-                  <div className="w-1 h-3 bg-current rounded-full animate-pulse" style={{ color: themeColor }} />
-                  <div className="w-1 h-5 bg-current rounded-full animate-bounce" style={{ color: themeColor }} />
-                  <div className="w-1 h-8 bg-current rounded-full animate-pulse" style={{ color: themeColor }} />
-                  <div className="w-1 h-4 bg-current rounded-full animate-bounce" style={{ color: themeColor }} />
-                </div>
-              )}
             </div>
           )}
 
-          {/* Main Visual Wave Central Portal (hidden when camera is wide) */}
-          {!cameraEnabled && (
-            <div className="relative select-none animate-in fade-in zoom-in-95 duration-500">
+          {/* Main Visual Wave Central Portal */}
+          <div className="relative select-none animate-in fade-in zoom-in-95 duration-500">
               
               {/* Soft Ambient shadow ring glows */}
               <div 
@@ -1687,7 +1676,6 @@ export default function App() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* Persona Voice Line Quote Subtitle Text overlay */}
           <div className="space-y-4 px-4 w-full">
