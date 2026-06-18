@@ -1839,7 +1839,23 @@ export default function App() {
         <div className="flex flex-col flex-1 min-h-[160px] space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Personality Logs</p>
-            <span className="text-[9px] font-mono text-slate-500 px-1.5 py-0.5 bg-white/5 rounded">Live Console</span>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => {
+                  const logText = transcripts.map(t => `[${t.timestamp.toTimeString().split(' ')[0]}] ${t.sender === "user" ? "User" : currentSelectedPersona.name}: ${t.text}`).join('\\n');
+                  navigator.clipboard.writeText(logText).then(() => {
+                    alert("ログをコピーしました！");
+                  }).catch(err => {
+                    console.error("Failed to copy text: ", err);
+                  });
+                }}
+                className="text-[9px] font-mono text-slate-400 hover:text-white px-2 py-0.5 bg-white/5 hover:bg-white/10 rounded transition-colors active:scale-95"
+                title="Copy logs to clipboard"
+              >
+                COPY
+              </button>
+              <span className="text-[9px] font-mono text-slate-500 px-1.5 py-0.5 bg-white/5 rounded">Live Console</span>
+            </div>
           </div>
 
           <div className="flex-1 bg-black/30 border border-white/5 rounded-2xl p-4 overflow-y-auto overflow-x-hidden space-y-3 max-h-[250px] lg:max-h-none text-[11px] font-mono leading-relaxed scrollbar-thin scrollbar-thumb-white/5">
