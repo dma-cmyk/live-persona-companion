@@ -1022,9 +1022,11 @@ export default function App() {
       const targetId = deviceIdStr || selectedDeviceId;
       let stream;
       if (targetId === "screen") {
-        stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        stream = await navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
       } else {
-        const constraints: MediaStreamConstraints = targetId ? { video: { deviceId: { exact: targetId } } } : { video: true };
+        const constraints: MediaStreamConstraints = targetId 
+          ? { video: { deviceId: { exact: targetId }, width: { ideal: 1280 }, height: { ideal: 720 } } } 
+          : { video: { width: { ideal: 1280 }, height: { ideal: 720 } } };
         stream = await navigator.mediaDevices.getUserMedia(constraints);
       }
       videoStreamRef.current = stream;
@@ -1054,7 +1056,7 @@ export default function App() {
           canvas.height = video.videoHeight;
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
           
-          const base64Data = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+          const base64Data = canvas.toDataURL("image/jpeg", 0.9).split(",")[1];
           wsRef.current.send(JSON.stringify({
             type: "video",
             data: base64Data
@@ -1868,10 +1870,21 @@ export default function App() {
                 {transcripts.map((item, idx) => {
                   const isUser = item.sender === "user";
                   return (
-                    <div key={item.id || idx} className="space-y-0.5 animate-fade-in break-words">
-                      <span className="font-bold" style={{ color: isUser ? '#64748b' : themeColor }}>
-                        [{item.timestamp.toTimeString().split(' ')[0]}] {isUser ? "User" : currentSelectedPersona.name}:
-                      </span>
+                    <div key={item.id || idx} className="space-y-0.5 animate-fade-in break-words group relative">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold" style={{ color: isUser ? '#64748b' : themeColor }}>
+                          [{item.timestamp.toTimeString().split(' ')[0]}] {isUser ? "User" : currentSelectedPersona.name}:
+                        </span>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(item.text).catch(err => console.error(err));
+                          }}
+                          className="opacity-0 group-hover:opacity-100 text-[9px] text-slate-500 hover:text-white px-1.5 py-0.5 bg-white/5 rounded transition-all active:scale-95"
+                          title="Copy this message"
+                        >
+                          Copy
+                        </button>
+                      </div>
                       <p className="text-slate-300 pl-2 text-[11px]">{item.text}</p>
                     </div>
                   );
