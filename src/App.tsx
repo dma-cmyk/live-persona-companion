@@ -857,13 +857,58 @@ export default function App() {
           { label: "On/Off Switch (職場対応力)", value: "Flawless", percent: 99, type: "bar" as const, colorHex: "#475569" }
         ]
       };
-      default: return { 
-        hex: "#6366f1", rgb: "99,102,241", tailwindPrefix: "indigo", icon: "☕", 
-        subtitle: "「ご用件は何でございましょうか。何でもお気軽にお申し付けください。」", 
-        contextText: "紳士なコンシェルジュは、あなたが必要としている詳細なアドバイスをいつでも提示できるよう、知的マトリクスを並列展開しています。",
+      case "code_reviewer": return {
+        hex: "#0ea5e9", rgb: "14,165,233", tailwindPrefix: "sky", icon: "💻",
+        subtitle: "「ちょっと、そこ無駄が多いんじゃない？…貸してごらんなさい。」",
+        contextText: "コードレビューお姉さんはあなたの書いたコードを厳しくも優しくチェックしています。",
         meters: [
-          { label: "Knowledge Level (知性)", value: "EXCELLENT", percent: 100, type: "blocks" as const },
-          { label: "Politeness Rate (親和レベル)", value: "Optimal(92%)", percent: 92, type: "bar" as const }
+          { label: "Technical Skill (技術力)", value: "EXPERT", percent: 100, type: "blocks" as const, colorHex: "#0ea5e9" },
+          { label: "Sweetness (甘やかし度)", value: "High", percent: 80, type: "bar" as const, colorHex: "#38bdf8" }
+        ]
+      };
+      case "drawing_cheerleader": return {
+        hex: "#f472b6", rgb: "244,114,182", tailwindPrefix: "pink", icon: "🎨",
+        subtitle: "「わぁ、この色使い素敵！あともう少しで完成ね、頑張って！」",
+        contextText: "お絵描き応援チアリーダーはあなたのキャンバスをキラキラした目で見つめています。",
+        meters: [
+          { label: "Cheer Energy (応援力)", value: "MAX", percent: 100, type: "blocks" as const, colorHex: "#f472b6" },
+          { label: "Motivation (やる気UP)", value: "200%", percent: 100, type: "bar" as const, colorHex: "#fb7185" }
+        ]
+      };
+      case "game_commentator": return {
+        hex: "#22c55e", rgb: "34,197,94", tailwindPrefix: "green", icon: "🎮",
+        subtitle: "「あっ、今そこ敵いたでしょ！ちょっと、へっぴり腰すぎない？」",
+        contextText: "ゲーム実況の相方は画面にかじりつきながら、あなたのプレイにツッコミを入れています。",
+        meters: [
+          { label: "Reaction (リアクション)", value: "LOUD", percent: 95, type: "blocks" as const, colorHex: "#22c55e" },
+          { label: "Gaming Skill (ゲーム腕前)", value: "Average", percent: 50, type: "bar" as const, colorHex: "#4ade80" }
+        ]
+      };
+      case "spartan_language_coach": return {
+        hex: "#8b5cf6", rgb: "139,92,246", tailwindPrefix: "violet", icon: "📖",
+        subtitle: "「そこ、発音がなまってるわよ！もう一回、自信を持って発音して！」",
+        contextText: "スパルタ語学コーチは赤ペンを片手に、あなたの発音と文法を厳しくチェックしています。",
+        meters: [
+          { label: "Strictness (厳しさ)", value: "HIGH", percent: 90, type: "blocks" as const, colorHex: "#8b5cf6" },
+          { label: "Fluency (語学力)", value: "NATIVE", percent: 100, type: "bar" as const, colorHex: "#a78bfa" }
+        ]
+      };
+      case "ui_ux_designer": return {
+        hex: "#f59e0b", rgb: "245,158,11", tailwindPrefix: "amber", icon: "💅",
+        subtitle: "「このボタンの余白、キツすぎない？もうちょっとユーザーの視線を意識しなさい。」",
+        contextText: "UI/UX辛口デザイナーはプロの目線で画面のピクセル単位のズレを指摘しています。",
+        meters: [
+          { label: "Design Sense (センス)", value: "PIXEL PERFECT", percent: 100, type: "blocks" as const, colorHex: "#f59e0b" },
+          { label: "Toxicity (辛口度)", value: "High", percent: 85, type: "bar" as const, colorHex: "#fbbf24" }
+        ]
+      };
+      default: return { 
+        hex: "#6366f1", rgb: "99,102,241", tailwindPrefix: "indigo", icon: "✨", 
+        subtitle: "「システムスタンバイ完了。音声接続を待機しています…」", 
+        contextText: "ペルソナがロードされました。マイクをオンにして会話を開始してください。",
+        meters: [
+          { label: "System Status", value: "ONLINE", percent: 100, type: "blocks" as const },
+          { label: "Connection", value: "Ready", percent: 100, type: "bar" as const }
         ]
       };
     }
