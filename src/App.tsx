@@ -105,7 +105,7 @@ class GeminiWebSocketClient {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
           this.ws.send(JSON.stringify({
             realtimeInput: {
-              mediaChunks: [{ mimeType: "audio/pcm;rate=16000", data: payload.data }]
+              audio: { mimeType: "audio/pcm;rate=16000", data: payload.data }
             }
           }));
         }
@@ -113,7 +113,7 @@ class GeminiWebSocketClient {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
           this.ws.send(JSON.stringify({
             realtimeInput: {
-              mediaChunks: [{ mimeType: "image/jpeg", data: payload.data }]
+              video: { mimeType: "image/jpeg", data: payload.data }
             }
           }));
         }
