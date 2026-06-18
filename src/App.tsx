@@ -62,7 +62,10 @@ class GeminiWebSocketClient {
               generationConfig: {
                 responseModalities: ["AUDIO"]
               },
-              systemInstruction: { parts: [{ text: systemInstruction }] }
+              systemInstruction: { parts: [{ text: systemInstruction }] },
+              // Enable audio transcriptions
+              inputAudioTranscription: { model: "models/gemini-2.0-flash-exp" }, // Or just {}
+              outputAudioTranscription: { model: "models/gemini-2.0-flash-exp" } // Depends on model, usually just {} works or specific model
             }
           };
           if (!voiceName?.startsWith("VOICEVOX")) {
@@ -130,7 +133,18 @@ class GeminiWebSocketClient {
           if (part.inlineData?.data) {
             this.triggerMessage({ type: "audio", data: part.inlineData.data });
           }
+          if (part.text) {
+            this.triggerMessage({ type: "model-transcript", text: part.text });
+          }
         }
+      }
+      
+      // Handle transcriptions (if API returns them here instead of modelTurn)
+      if (msg.serverContent.outputTranscription?.text) {
+        this.triggerMessage({ type: "model-transcript", text: msg.serverContent.outputTranscription.text });
+      }
+      if (msg.serverContent.inputTranscription?.text) {
+        this.triggerMessage({ type: "user-transcript", text: msg.serverContent.inputTranscription.text });
       }
       if (msg.serverContent.turnComplete) {
         this.triggerMessage({ type: "turn-end" });
