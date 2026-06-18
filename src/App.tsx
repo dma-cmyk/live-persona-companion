@@ -1020,8 +1020,13 @@ export default function App() {
         videoStreamRef.current.getTracks().forEach((track) => track.stop());
       }
       const targetId = deviceIdStr || selectedDeviceId;
-      const constraints: MediaStreamConstraints = targetId ? { video: { deviceId: { exact: targetId } } } : { video: true };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      let stream;
+      if (targetId === "screen") {
+        stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      } else {
+        const constraints: MediaStreamConstraints = targetId ? { video: { deviceId: { exact: targetId } } } : { video: true };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      }
       videoStreamRef.current = stream;
       
       // Update device list to get real names after permission granted
@@ -2141,13 +2146,19 @@ export default function App() {
                       className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                     >
                       {videoDevices.length > 0 ? (
-                        videoDevices.map((d) => (
-                          <option key={d.deviceId} value={d.deviceId}>
-                            {d.label || `Camera ${d.deviceId.slice(0, 5)}...`}
-                          </option>
-                        ))
+                        <>
+                          <option value="screen">🖥️ Screen Share (画面共有)</option>
+                          {videoDevices.map((d) => (
+                            <option key={d.deviceId} value={d.deviceId}>
+                              {d.label || `Camera ${d.deviceId.slice(0, 5)}...`}
+                            </option>
+                          ))}
+                        </>
                       ) : (
-                        <option value="">No Camera Found</option>
+                        <>
+                          <option value="screen">🖥️ Screen Share (画面共有)</option>
+                          <option value="">No Camera Found</option>
+                        </>
                       )}
                     </select>
                   </div>
