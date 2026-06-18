@@ -1589,8 +1589,11 @@ export default function App() {
               <video 
                 autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" 
                 ref={node => {
-                  if (node && videoStreamRef.current) {
+                  if (node && videoStreamRef.current && node.srcObject !== videoStreamRef.current) {
                     node.srcObject = videoStreamRef.current;
+                  }
+                  if (videoRef) {
+                    videoRef.current = node;
                   }
                 }} 
               />
