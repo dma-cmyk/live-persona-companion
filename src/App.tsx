@@ -26,6 +26,106 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { Persona, TranscriptItem, ConnectionStatus } from "./types";
 import { VOICEVOX_SPEAKERS } from "./voicevox_speakers";
+import { GoogleGenAI, Modality } from "@google/genai";
+
+class GeminiWebSocketClient {
+  public onopen: (() => void) | null = null;
+  public onmessage: ((event: { data: string }) => void) | null = null;
+  public onclose: ((event: any) => void) | null = null;
+  public onerror: ((error: any) => void) | null = null;
+  public readyState: number = 1; // 1 = OPEN
+  
+  private session: any = null;
+  private isClosed: boolean = false;
+  
+  constructor() {
+    setTimeout(() => {
+      if (this.onopen) this.onopen();
+    }, 0);
+  }
+  
+  send(dataStr: string) {
+    if (this.isClosed) return;
+    try {
+      const payload = JSON.parse(dataStr);
+      if (payload.type === "setup") {
+        const { systemInstruction, voiceName, customApiKey, customModel } = payload;
+        const ai = new GoogleGenAI({ apiKey: customApiKey, httpOptions: { headers: { "User-Agent": "aistudio-build" } } });
+        ai.live.connect({
+          model: customModel || "gemini-3.1-flash-live-preview",
+          config: {
+            responseModalities: [Modality.AUDIO],
+            speechConfig: voiceName && voiceName.startsWith("VOICEVOX") ? undefined : {
+              voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName || "Kore" } }
+            },
+            systemInstruction: systemInstruction,
+            outputAudioTranscription: {},
+            inputAudioTranscription: {},
+          },
+          callbacks: {
+            onmessage: (msg: any) => {
+              if (this.isClosed) return;
+              if (msg.serverContent) {
+                if (msg.serverContent.modelTurn?.parts) {
+                  for (const part of msg.serverContent.modelTurn.parts) {
+                    if (part.inlineData?.data) {
+                      this.triggerMessage({ type: "audio", data: part.inlineData.data });
+                    }
+                  }
+                }
+                if (msg.serverContent.outputTranscription?.text) {
+                  this.triggerMessage({ type: "model-transcript", text: msg.serverContent.outputTranscription.text });
+                }
+                if (msg.serverContent.inputTranscription?.text) {
+                  this.triggerMessage({ type: "user-transcript", text: msg.serverContent.inputTranscription.text });
+                }
+                if (msg.serverContent.turnComplete) {
+                  this.triggerMessage({ type: "turn-end" });
+                }
+                if (msg.serverContent.interrupted) {
+                  this.triggerMessage({ type: "interrupted" });
+                }
+              }
+            },
+            onclose: (e: any) => {
+               if (this.onclose) this.onclose(e);
+            }
+          }
+        }).then(session => {
+          this.session = session;
+          this.triggerMessage({ type: "ready" });
+        }).catch(err => {
+          this.triggerMessage({ type: "error", message: err.message || "Failed to connect to Gemini API" });
+          if (this.onerror) this.onerror(err);
+        });
+      } else if (payload.type === "audio") {
+        if (this.session) {
+          this.session.sendRealtimeInput([{ mimeType: "audio/pcm;rate=16000", data: payload.data }]);
+        }
+      } else if (payload.type === "video") {
+        if (this.session) {
+          this.session.sendRealtimeInput([{ mimeType: "image/jpeg", data: payload.data }]);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  
+  private triggerMessage(dataObj: any) {
+    if (this.onmessage) {
+      this.onmessage({ data: JSON.stringify(dataObj) });
+    }
+  }
+  
+  close() {
+    this.isClosed = true;
+    this.readyState = 3; // CLOSED
+    if (this.session) {
+      try { this.session.close(); } catch(e){}
+    }
+  }
+}
 
 // Helper function to convert Float32 raw browser mic audio channel PCM to 16-bit small-endian Int16 array representation
 function float32ToInt16(f32Array: Float32Array): string {
@@ -401,14 +501,15 @@ export default function App() {
     if (!customApiKey) return;
     setIsFetchingModels(true);
     try {
-      const res = await fetch("/api/models", {
-        headers: { "x-api-key": customApiKey }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const models = data.models || [];
-        setAvailableModels(models.filter((m: string) => m.includes("live")));
+      const ai = new GoogleGenAI({ apiKey: customApiKey });
+      const modelsResponse = await ai.models.list();
+      const models = [];
+      for await (const m of modelsResponse) {
+        if (m.name.includes("models/gemini") && (m.name.includes("flash") || m.name.includes("live") || m.name.includes("pro"))) {
+          models.push(m.name);
+        }
       }
+      setAvailableModels(models.filter((m: string) => m.includes("live")));
     } catch (err) {
       console.error("Failed to fetch models:", err);
     } finally {
@@ -956,7 +1057,7 @@ export default function App() {
     const wsUrl = `${wsProto}//${loc.host}/ws/live`;
 
     try {
-      const socket = new WebSocket(wsUrl);
+      const socket = new GeminiWebSocketClient() as unknown as WebSocket;
       wsRef.current = socket;
 
       socket.onopen = () => {
