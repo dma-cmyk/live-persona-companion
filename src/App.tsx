@@ -64,10 +64,12 @@ class GeminiWebSocketClient {
               },
               systemInstruction: { parts: [{ text: systemInstruction }] },
               // Enable audio transcriptions
-              inputAudioTranscription: { model: "models/gemini-2.0-flash-exp" }, // Or just {}
-              outputAudioTranscription: { model: "models/gemini-2.0-flash-exp" } // Depends on model, usually just {} works or specific model
+              // Setting to empty objects usually defaults to the model's transcription capability
+              inputAudioTranscription: {},
+              outputAudioTranscription: {}
             }
           };
+
           if (!voiceName?.startsWith("VOICEVOX")) {
              setupMsg.setup.generationConfig.speechConfig = {
                voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName || "Kore" } }
