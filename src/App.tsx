@@ -2054,8 +2054,8 @@ export default function App() {
         <div className="relative flex flex-col items-center text-center space-y-10 lg:space-y-12 z-10 w-full px-6 max-w-2xl">
           
           {/* Main Visual Wave Central Portal (hidden when camera is wide) */}
-          {/* Main Visual Wave Central Portal (hidden when camera is wide for screen share) */}
-          {(!cameraEnabled || selectedDeviceId !== 'screen') && (
+          {/* Main Visual Wave Central Portal (hidden when camera is active) */}
+          {!cameraEnabled && (
             <div className="relative select-none animate-in fade-in zoom-in-95 duration-500">
               
               {/* Soft Ambient shadow ring glows */}
@@ -2084,7 +2084,7 @@ export default function App() {
                   className="w-full h-full rounded-full border-4 flex items-center justify-center p-2 transition-all duration-700 overflow-hidden relative"
                   style={{ borderColor: isSpeakingAnimation ? `rgba(${themeRgb}, 0.1)` : 'rgba(255,255,255,0.05)' }}
                 >
-                  // Visualizer bars or center piece (always visible when portal is shown)
+                  {/* Visualizer bars or center piece (always visible when portal is shown) */}
                   <div className="flex items-end justify-center space-x-1 h-32 w-32 relative">
                     {isSpeakingAnimation ? (
                       // Conversational visualizer wave heights
