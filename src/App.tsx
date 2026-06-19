@@ -644,7 +644,8 @@ export default function App() {
         }
       } else {
         if (!customApiKey) {
-          alert("APIキーが設定されていません。グローバル設定でAPIキーを設定してください。");
+          alert("APIキーが設定されていません。グローバル設定画面を開きますので、APIキーを入力してください。");
+          setShowSettingsModal(true);
           setIsPreviewLoading(false);
           return;
         }
