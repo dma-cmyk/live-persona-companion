@@ -1325,7 +1325,7 @@ export default function App() {
       };
 
       socket.onclose = (event) => {
-        console.log("WebSocket connection closed:", event);
+        console.log(`WebSocket connection closed: Code=${event.code}, Reason=${event.reason || "No reason given"}, WasClean=${event.wasClean}`, event);
         if (connectionStatus === "connected") {
           setConnectionStatus("disconnected");
         }
