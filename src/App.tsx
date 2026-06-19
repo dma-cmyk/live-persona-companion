@@ -571,7 +571,7 @@ export default function App() {
   const [speakLanguage, setSpeakLanguage] = useState<string>("ja-JP");
   const [customApiKey, setCustomApiKey] = useState<string>(() => localStorage.getItem("customApiKey") || "");
   const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [customModel, setCustomModel] = useState<string>(() => localStorage.getItem("customModel") || "models/gemini-3.1-flash-live-preview");
+  const [customModel, setCustomModel] = useState<string>(() => localStorage.getItem("customModel") || "gemini-3.1-flash-live-preview");
   const [isFetchingModels, setIsFetchingModels] = useState<boolean>(false);
   
   useEffect(() => {
@@ -603,18 +603,11 @@ export default function App() {
       // Log all retrieved models to the console for local verification
       console.log("All fetched models from Google API:", models.map((m: any) => m.name));
       
-      // Filter models that are compatible with Gemini Live API (2.0-flash, 2.5-flash, or explicitly containing "live"/"realtime")
+      // Filter models that contain "live" in their name (case-insensitive)
+      // and strip "models/" prefix to unify layout format
       const filtered = models
-        .map((m: any) => m.name)
-        .filter((name: string) => {
-          const lower = name.toLowerCase();
-          return lower.includes("gemini") && (
-            lower.includes("2.0-flash") ||
-            lower.includes("2.5-flash") ||
-            lower.includes("live") ||
-            lower.includes("realtime")
-          );
-        });
+        .map((m: any) => m.name.replace("models/", ""))
+        .filter((name: string) => name.toLowerCase().includes("live"));
 
       setAvailableModels(filtered);
 
@@ -2274,19 +2267,19 @@ export default function App() {
                         className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                       />
                       <datalist id="models-list">
-                        <option value="models/gemini-3.1-flash-live-preview" />
-                        <option value="models/gemini-2.0-flash-live" />
-                        <option value="models/gemini-2.0-flash-exp" />
-                        <option value="models/gemini-2.0-flash-realtime-exp" />
-                        <option value="models/gemini-2.5-flash" />
-                        <option value="models/gemini-3.5-live-translate" />
+                        <option value="gemini-3.1-flash-live-preview" />
+                        <option value="gemini-2.0-flash-live" />
+                        <option value="gemini-2.0-flash-exp" />
+                        <option value="gemini-2.0-flash-realtime-exp" />
+                        <option value="gemini-2.5-flash" />
+                        <option value="gemini-3.5-live-translate" />
                         {availableModels.filter(m => ![
-                          "models/gemini-3.1-flash-live-preview",
-                          "models/gemini-2.0-flash-live",
-                          "models/gemini-2.0-flash-exp",
-                          "models/gemini-2.0-flash-realtime-exp",
-                          "models/gemini-2.5-flash",
-                          "models/gemini-3.5-live-translate"
+                          "gemini-3.1-flash-live-preview",
+                          "gemini-2.0-flash-live",
+                          "gemini-2.0-flash-exp",
+                          "gemini-2.0-flash-realtime-exp",
+                          "gemini-2.5-flash",
+                          "gemini-3.5-live-translate"
                         ].includes(m)).map((m) => (
                           <option key={m} value={m} />
                         ))}
