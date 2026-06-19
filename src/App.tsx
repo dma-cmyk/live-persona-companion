@@ -590,6 +590,13 @@ export default function App() {
     localStorage.setItem("customModel", customModel);
   }, [customModel]);
 
+  useEffect(() => {
+    // If API Key is not set on load, show settings modal automatically
+    if (!customApiKey) {
+      setShowSettingsModal(true);
+    }
+  }, []);
+
   const [isPreviewLoading, setIsPreviewLoading] = useState<boolean>(false);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
