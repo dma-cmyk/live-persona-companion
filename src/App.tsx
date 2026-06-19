@@ -807,7 +807,7 @@ export default function App() {
         }
         
         const text = speakLanguage === "ja-JP" ? "こんにちは！音声のプレビューです。" : "Hello! This is a voice preview.";
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${customApiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-tts-preview:generateContent?key=${customApiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
