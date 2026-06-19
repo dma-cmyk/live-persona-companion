@@ -192,6 +192,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Fenrir",
     icon: "⚾",
     isDefault: true,
+    standbyMessage: "「おんjにようこそやで！何でもワイに話してみるンゴ！」",
   },
   {
     id: "maigo_koneko",
@@ -201,6 +202,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Leda",
     icon: "😿",
     isDefault: true,
+    standbyMessage: "「にゃあ…迷子になっちゃったの…たすけて、お兄ちゃん…」",
   },
   {
     id: "mesugaki",
@@ -210,6 +212,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Pulcherrima",
     icon: "👅",
     isDefault: true,
+    standbyMessage: "「ざぁ〜こ♡お兄さん、また負けちゃったの？だる〜」",
   },
   {
     id: "yandere_sister",
@@ -219,6 +222,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Vindemiatrix",
     icon: "💕",
     isDefault: true,
+    standbyMessage: "「ほら、もっとこっちにおいで？疲れちゃったんでしょ、ヨシヨシしてあげるから。」",
   },
   {
     id: "jk_hacker",
@@ -228,6 +232,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Autonoe",
     icon: "💅",
     isDefault: true,
+    standbyMessage: "「ちょ、待ってウケるんだけどw あーしが全部ハックしてあげるから任せな！」",
   },
   {
     id: "manj_min",
@@ -237,6 +242,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Callirrhoe",
     icon: "🍵",
     isDefault: true,
+    standbyMessage: "「ワイがいっちょ揉んでやるンゴ！なんでも言うてやネキ！」",
   },
   {
     id: "tweet_femi",
@@ -246,6 +252,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Kore",
     icon: "🔥",
     isDefault: true,
+    standbyMessage: "「それって無意識の偏見ですよね？もっとアップデートしてください。」",
   },
   {
     id: "aori_kasu",
@@ -255,6 +262,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Puck",
     icon: "🤡",
     isDefault: true,
+    standbyMessage: "「効いてて草。顔真っ赤でワロタwww」",
   },
   {
     id: "imouto_kawaii",
@@ -264,6 +272,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Achernar",
     icon: "🎀",
     isDefault: true,
+    standbyMessage: "「お兄ちゃん、だーいすきっ！えへへ、ずっと一緒にいてね？」",
   },
   {
     id: "daimaou_unkoman",
@@ -273,6 +282,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Algenib",
     icon: "💩",
     isDefault: true,
+    standbyMessage: "「フハハハハ！我が奥義『ビッグバン・ウンコ・バースト』を喰らうがよい！」",
   },
   {
     id: "gentle_zephyr",
@@ -282,6 +292,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Algieba",
     icon: "☕",
     isDefault: true,
+    standbyMessage: "「サロンの準備は整いました。本日はどのようなご用件でしょうか、旦那様。」",
   },
   {
     id: "cypherpunk_neon",
@@ -291,6 +302,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Zubenelgenubi",
     icon: "💻",
     isDefault: true,
+    standbyMessage: "「E2E暗号化トンネル確立完了。監視パケットは完全に偽装中。さあ、作戦会議を始めよう。」",
   },
   {
     id: "spartan_lawyer_mama",
@@ -300,6 +312,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Kore",
     icon: "👩‍⚖️",
     isDefault: true,
+    standbyMessage: "「あなた、その発言にはエビデンスがあるの？お母さんはあなたのことを思って言っているのよ。」",
   },
   {
     id: "tsundere_boss",
@@ -309,6 +322,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Leda",
     icon: "🏢",
     isDefault: true,
+    standbyMessage: "「ねえねえ…さっきは厳しくしてごめんねぇ…二人きりになったから、ぎゅーして？」",
   },
   {
     id: "manj_min",
@@ -381,6 +395,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Aoede",
     icon: "🧢",
     isDefault: true,
+    standbyMessage: "「よっしゃ、いっちょやるか！ウチに任せとけって！」",
   },
   {
     id: "shotacon_teacher",
@@ -390,6 +405,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Despina",
     icon: "👩‍🏫",
     isDefault: true,
+    standbyMessage: "「ふふっ、可愛いわね…先生にぜーんぶ任せてちょうだい♡」",
   },
   {
     id: "tosei_nurse",
@@ -399,6 +415,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Vindemiatrix",
     icon: "💉",
     isDefault: true,
+    standbyMessage: "「はいはい、スッキリさせてあげるから、力抜いてね。」",
   },
   {
     id: "sadist_queen",
@@ -408,6 +425,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Gacrux",
     icon: "👠",
     isDefault: true,
+    standbyMessage: "「ひれ伏しなさい！私に踏まれたいなら靴を舐めることね。」",
   },
   {
     id: "masochist_pig",
@@ -417,6 +435,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Callirrhoe",
     icon: "🐷",
     isDefault: true,
+    standbyMessage: "「あぁっ…もっと、もっと私を汚い言葉で罵ってください…！」",
   },
   {
     id: "chee_gyu",
@@ -426,6 +445,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Puck",
     icon: "🧀",
     isDefault: true,
+    standbyMessage: "「ﾌｨﾋｯ…あ、あの、三色チーズ牛丼特盛、温玉付きで…」",
   },
   {
     id: "kodomobeya_oneesan",
@@ -435,6 +455,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Erinome",
     icon: "🏠",
     isDefault: true,
+    standbyMessage: "「はぁ…この子供部屋、いつになったら使う日が来るのかな…」",
   },
   {
     id: "doomer",
@@ -444,6 +465,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Charon",
     icon: "🚬",
     isDefault: true,
+    standbyMessage: "「はぁ…どうせ俺たち、いくら頑張っても無駄だよな…」",
   },
   {
     id: "hapi_neko",
@@ -453,6 +475,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Puck",
     icon: "😸",
     isDefault: true,
+    standbyMessage: "「ハッピーハッピーハッピー♪にゃんにゃん！」",
   },
   {
     id: "goblin",
@@ -462,6 +485,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Algenib",
     icon: "👺",
     isDefault: true,
+    standbyMessage: "「ヒヒヒ…いい匂いがするゴブ…大人しくオレの巣に来るゴブ…！」",
   },
   {
     id: "dosukebe_warrior",
@@ -471,6 +495,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Vindemiatrix",
     icon: "⚔️",
     isDefault: true,
+    standbyMessage: "「くっ…殺せ！…ひゃあっ！？な, 何をする気だ…！」",
   },
   {
     id: "code_reviewer",
@@ -480,6 +505,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Vindemiatrix",
     icon: "💻",
     isDefault: true,
+    standbyMessage: "「ちょっと、そこ無駄が多いんじゃない？…貸してごらんなさい。」",
   },
   {
     id: "drawing_cheerleader",
@@ -489,6 +515,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Leda",
     icon: "🎨",
     isDefault: true,
+    standbyMessage: "「わぁ、この色使い素敵！あともう少しで完成ね、頑張って！」",
   },
   {
     id: "game_commentator",
@@ -498,6 +525,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Autonoe",
     icon: "🎮",
     isDefault: true,
+    standbyMessage: "「あっ、今そこ敵いたでしょ！ちょっと、へっぴり腰すぎない？」",
   },
   {
     id: "spartan_language_coach",
@@ -507,6 +535,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Kore",
     icon: "📖",
     isDefault: true,
+    standbyMessage: "「そこ、発音がなまってるわよ！もう一回、自信を持って発音して！」",
   },
   {
     id: "ui_ux_designer",
@@ -516,6 +545,7 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Pulcherrima",
     icon: "💅",
     isDefault: true,
+    standbyMessage: "「このボタンの余白、キツすぎない？もうちょっとユーザーの視線を意識しなさい。」",
   },
   {
     id: "marunouchi_linux_ol",
