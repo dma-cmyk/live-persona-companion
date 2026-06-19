@@ -587,16 +587,52 @@ export default function App() {
   }, [customModel]);
 
   const fetchModels = async () => {
-    if (!customApiKey) return;
+    if (!customApiKey) {
+      alert("APIキーが入力されていません。設定モーダルでAPIキーを入力してから取得してください。");
+      return;
+    }
     setIsFetchingModels(true);
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${customApiKey}`);
+      if (!res.ok) {
+        throw new Error(`API returned status ${res.status}`);
+      }
       const data = await res.json();
       const models = data.models || [];
-      const modelNames = models.map((m:any) => m.name).filter((name:string) => name.includes("gemini") && (name.includes("flash") || name.includes("live") || name.includes("pro")));
-      setAvailableModels(modelNames.filter((m: string) => m.includes("live")));
+      
+      // Filter models that contain "live" or "realtime" in their name (case-insensitive)
+      const filtered = models
+        .map((m: any) => m.name)
+        .filter((name: string) => {
+          const lower = name.toLowerCase();
+          return lower.includes("gemini") && (lower.includes("live") || lower.includes("realtime"));
+        });
+
+      if (filtered.length === 0) {
+        // Fallback standard live models if API did not return any explicit live-named models
+        const fallbacks = [
+          "models/gemini-2.0-flash-exp",
+          "models/gemini-2.0-flash-realtime-exp",
+          "models/gemini-2.0-flash-live",
+          "models/gemini-2.5-flash"
+        ];
+        setAvailableModels(fallbacks);
+        console.warn("No explicit live/realtime models found in API response. Loaded fallback standard models.");
+      } else {
+        setAvailableModels(filtered);
+      }
     } catch (err) {
       console.error("Failed to fetch models:", err);
+      alert("モデル一覧の取得に失敗しました。APIキーが正しいか確認してください。");
+      
+      // Also load fallbacks on error so the user has choices
+      const fallbacks = [
+        "models/gemini-2.0-flash-exp",
+        "models/gemini-2.0-flash-realtime-exp",
+        "models/gemini-2.0-flash-live",
+        "models/gemini-2.5-flash"
+      ];
+      setAvailableModels(fallbacks);
     } finally {
       setIsFetchingModels(false);
     }
