@@ -600,22 +600,15 @@ export default function App() {
       const data = await res.json();
       const models = data.models || [];
       
-      // Filter models that are compatible with Gemini Live API (2.0-flash, or containing "live"/"realtime")
+      // Filter models that strictly contain "live" in their name (case-insensitive)
       const filtered = models
         .map((m: any) => m.name)
-        .filter((name: string) => {
-          const lower = name.toLowerCase();
-          return lower.includes("gemini") && (
-            lower.includes("2.0-flash") ||
-            lower.includes("live") ||
-            lower.includes("realtime")
-          );
-        });
+        .filter((name: string) => name.toLowerCase().includes("live"));
 
       setAvailableModels(filtered);
 
       if (filtered.length === 0) {
-        alert("APIから取得したモデル一覧の中に Live機能対応モデル（2.0-flash, live, realtime）が見つかりませんでした。");
+        alert("APIから取得したモデル一覧の中に 'live' が含まれるモデルが見つかりませんでした。");
       }
     } catch (err) {
       console.error("Failed to fetch models:", err);
@@ -2270,12 +2263,7 @@ export default function App() {
                         className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                       />
                       <datalist id="models-list">
-                        <option value="models/gemini-3.1-flash-live-preview" />
-                        <option value="models/gemini-2.0-flash-live" />
-                        <option value="models/gemini-2.0-flash-exp" />
-                        <option value="models/gemini-2.0-flash-realtime-exp" />
-                        <option value="models/gemini-2.5-flash" />
-                        {availableModels.filter(m => m !== "models/gemini-3.1-flash-live-preview" && m !== "gemini-3.1-flash-live-preview").map((m) => (
+                        {availableModels.map((m) => (
                           <option key={m} value={m} />
                         ))}
                       </datalist>
