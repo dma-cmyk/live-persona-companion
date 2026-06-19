@@ -22,6 +22,7 @@ import {
   Key,
   Cpu,
   ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Persona, TranscriptItem, ConnectionStatus } from "./types";
@@ -587,7 +588,48 @@ export default function App() {
     return "gemini-3.1-flash-live-preview";
   });
   const [generationModel, setGenerationModel] = useState<string>(() => localStorage.getItem("generationModel") || "gemini-2.0-flash-lite");
-  
+  const [apiModels, setApiModels] = useState<string[]>(() => {
+    const saved = localStorage.getItem("api_models");
+    return saved ? JSON.parse(saved) : ["gemini-2.0-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"];
+  });
+  const [modelFilter, setModelFilter] = useState<string>(() => localStorage.getItem("model_filter") || "lite");
+  const [isLoadingModels, setIsLoadingModels] = useState<boolean>(false);
+
+  const fetchAvailableModels = async (keyToUse?: string) => {
+    const apiKey = keyToUse !== undefined ? keyToUse : customApiKey;
+    if (!apiKey) return;
+    setIsLoadingModels(true);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch models: ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.models && Array.isArray(data.models)) {
+        const filtered = data.models
+          .filter((m: any) => m.supportedGenerationMethods?.includes("generateContent"))
+          .map((m: any) => m.name.replace(/^models\//, ""));
+        if (filtered.length > 0) {
+          setApiModels(filtered);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching Gemini models:", err);
+    } finally {
+      setIsLoadingModels(false);
+    }
+  };
+
+  useEffect(() => {
+    localStorage.setItem("api_models", JSON.stringify(apiModels));
+  }, [apiModels]);
+
+  useEffect(() => {
+    localStorage.setItem("model_filter", modelFilter);
+  }, [modelFilter]);
+
+
+
   useEffect(() => {
     localStorage.setItem("selected_persona_id", selectedPersonaId);
   }, [selectedPersonaId]);
@@ -835,6 +877,13 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (showSettingsModal && customApiKey) {
+      fetchAvailableModels(customApiKey);
+    }
+  }, [showSettingsModal]);
+
   const [editPersonaId, setEditPersonaId] = useState<string | null>(null);
   const [newPersona, setNewPersona] = useState<Omit<Persona, "id">>({
     name: "",
@@ -2525,20 +2574,52 @@ export default function App() {
                   </div>
 
                   <div className="pt-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="w-4 h-4 text-slate-400" />
-                      <label className="text-sm text-slate-300 font-medium tracking-tight">AI Generation Model (LLM)</label>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-slate-400" />
+                        <label className="text-sm text-slate-300 font-medium tracking-tight">AI Generation Model (LLM)</label>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => fetchAvailableModels()}
+                        disabled={isLoadingModels || !customApiKey}
+                        className="text-xs text-pink-400 hover:text-pink-300 disabled:text-slate-600 transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        {isLoadingModels ? (
+                          <span className="w-3 h-3 border-2 border-pink-400 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-3 h-3" />
+                        )}
+                        <span>リスト更新</span>
+                      </button>
                     </div>
+
+                    <div className="mb-2">
+                      <input
+                        type="text"
+                        placeholder="モデル名を絞り込み (例: lite, flash, pro)"
+                        value={modelFilter}
+                        onChange={(e) => setModelFilter(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 text-slate-200 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-pink-500/30 transition-colors"
+                      />
+                    </div>
+
                     <div className="relative">
                       <select
                         value={generationModel}
                         onChange={(e) => setGenerationModel(e.target.value)}
                         className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                       >
-                        <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (推奨: 高速・低コスト)</option>
-                        <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-                        <option value="gemini-2.5-pro">gemini-2.5-pro</option>
-                        <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                        {apiModels
+                          .filter((model) => model.toLowerCase().includes(modelFilter.toLowerCase()))
+                          .map((model) => (
+                            <option key={model} value={model}>
+                              {model}
+                            </option>
+                          ))}
+                        {apiModels.filter((model) => model.toLowerCase().includes(modelFilter.toLowerCase())).length === 0 && (
+                          <option value="">一致するモデルがありません</option>
+                        )}
                       </select>
                     </div>
                   </div>
