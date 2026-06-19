@@ -2002,12 +2002,12 @@ export default function App() {
           style={{ backgroundImage: `radial-gradient(circle at 50% 40%, rgba(${themeRgb}, 0.15) 0%, transparent 70%)` }}
         />
 
-        {/* Camera/Screen Share Video Feed (Full Screen Background when active) */}
-        {cameraEnabled && (
-          <div className="absolute inset-0 w-full h-full overflow-hidden z-0 bg-[#09090b] flex items-center justify-center">
+        {/* Camera/Screen Share Video Feed (Full Screen Background when active only for screen share) */}
+        {cameraEnabled && selectedDeviceId === 'screen' && (
+          <div className="absolute inset-0 w-full h-full overflow-hidden z-0 bg-[#09090b] flex items-center justify-center animate-fade-in">
             <video 
               autoPlay playsInline muted 
-              className={`w-full h-full ${selectedDeviceId === 'screen' ? 'object-contain' : 'object-cover'} ${selectedDeviceId !== 'screen' ? 'scale-x-[-1]' : ''}`} 
+              className="w-full h-full object-contain" 
               ref={node => {
                 if (node && videoStreamRef.current && node.srcObject !== videoStreamRef.current) {
                   node.srcObject = videoStreamRef.current;
@@ -2018,12 +2018,12 @@ export default function App() {
               }} 
             />
             {/* Subtle Overlay to enhance text readability on top */}
-            <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+            <div className="absolute inset-0 bg-black/40 pointer-events-none" />
             
             {/* Floating Top indicators for Live and PiP */}
             <div className="absolute top-4 left-4 z-20 bg-black/60 px-3 py-1.5 rounded-lg flex items-center gap-2 backdrop-blur-md border border-white/5">
               <span className="w-2 h-2 rounded-full animate-pulse bg-emerald-500" />
-              <span className="text-xs font-mono font-bold tracking-widest text-emerald-500">LIVE SCREEN</span>
+              <span className="text-xs font-mono font-bold tracking-widest text-emerald-500">LIVE SCREEN (SHARE)</span>
             </div>
             
             <div className="absolute top-4 right-4 z-20 flex gap-2">
@@ -2052,7 +2052,8 @@ export default function App() {
         <div className="relative flex flex-col items-center text-center space-y-10 lg:space-y-12 z-10 w-full px-6 max-w-2xl">
           
           {/* Main Visual Wave Central Portal (hidden when camera is wide) */}
-          {!cameraEnabled && (
+          {/* Main Visual Wave Central Portal (hidden when camera is wide for screen share) */}
+          {(!cameraEnabled || (cameraEnabled && selectedDeviceId !== 'screen')) && (
             <div className="relative select-none animate-in fade-in zoom-in-95 duration-500">
               
               {/* Soft Ambient shadow ring glows */}
@@ -2071,48 +2072,73 @@ export default function App() {
 
               {/* Frame Box Wrapper */}
               <div 
-                className="w-60 h-60 sm:w-64 sm:h-64 rounded-full border-2 transition-all duration-700 flex items-center justify-center relative p-4 bg-black/40 backdrop-blur-xl shadow-inner"
+                className="w-60 h-60 sm:w-64 sm:h-64 rounded-full border-2 transition-all duration-700 flex items-center justify-center relative p-4 bg-black/40 backdrop-blur-xl shadow-inner overflow-hidden"
                 style={{ 
                   borderColor: isSpeakingAnimation ? `rgba(${themeRgb}, 0.4)` : 'rgba(255,255,255,0.05)',
                   boxShadow: isSpeakingAnimation ? `0 0 20px rgba(${themeRgb}, 0.3)` : 'none'
                 }}
               >
                 <div 
-                  className="w-full h-full rounded-full border-4 flex items-center justify-center p-2 transition-all duration-700"
+                  className="w-full h-full rounded-full border-4 flex items-center justify-center p-2 transition-all duration-700 overflow-hidden relative"
                   style={{ borderColor: isSpeakingAnimation ? `rgba(${themeRgb}, 0.1)` : 'rgba(255,255,255,0.05)' }}
                 >
-                  {/* Visualizer bars or center piece */}
-                  <div className="flex items-end justify-center space-x-1 h-32 w-32 relative">
-                    {isSpeakingAnimation ? (
-                      // Conversational visualizer wave heights
-                      <>
-                        <div className="w-1.5 h-8 bg-current opacity-40 rounded-full animate-pulse" style={{ color: themeColor }} />
-                        <div className="w-1.5 h-16 bg-current opacity-60 rounded-full animate-bounce" style={{ color: themeColor }} />
-                        <div className="w-1.5 h-24 bg-current rounded-full animate-pulse" style={{ color: themeColor, boxShadow: `0 0 15px ${themeColor}` }} />
-                        <div className="w-1.5 h-20 bg-current opacity-60 rounded-full animate-bounce" style={{ color: themeColor }} />
-                        <div className="w-1.5 h-10 bg-current opacity-40 rounded-full animate-pulse" style={{ color: themeColor }} />
-                      </>
-                    ) : connectionStatus === "connected" && micVolumeLevel > 2 ? (
-                      // Mic inputs frequency mapping
-                      <>
-                        <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-500" style={{ height: `${Math.min(96, 12 + micVolumeLevel * 0.9)}px` }} />
-                        <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-400" style={{ height: `${Math.min(96, 16 + micVolumeLevel * 1.6)}px` }} />
-                        <div className="w-1.5 rounded-full transition-all duration-75" style={{ height: `${Math.min(96, 24 + micVolumeLevel * 2.4)}px`, backgroundColor: themeColor, boxShadow: `0 0 12px ${themeColor}` }} />
-                        <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-400" style={{ height: `${Math.min(96, 14 + micVolumeLevel * 1.5)}px` }} />
-                        <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-500" style={{ height: `${Math.min(96, 10 + micVolumeLevel * 0.8)}px` }} />
-                      </>
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ${
-                          connectionStatus === "connected"
-                            ? "bg-emerald-500/10 text-emerald-400"
-                            : "bg-white/5 text-slate-500"
-                        }`}>
-                          <Radio className={`w-6 h-6 ${connectionStatus === "connected" ? "animate-pulse" : ""}`} />
-                        </div>
+                  {cameraEnabled && selectedDeviceId !== 'screen' ? (
+                    // Embedded camera window inside the central portal
+                    <div className="absolute inset-0 w-full h-full bg-[#111114]">
+                      <video 
+                        autoPlay playsInline muted 
+                        className="w-full h-full object-cover scale-x-[-1]" 
+                        ref={node => {
+                          if (node && videoStreamRef.current && node.srcObject !== videoStreamRef.current) {
+                            node.srcObject = videoStreamRef.current;
+                          }
+                          if (videoRef) {
+                            videoRef.current = node;
+                          }
+                        }} 
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/70 px-2 py-0.5 rounded-full border border-white/5 pointer-events-none">
+                        <span className="text-[8px] font-mono text-emerald-400 font-bold tracking-widest flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          CAMERA
+                        </span>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    // Visualizer bars or center piece
+                    <div className="flex items-end justify-center space-x-1 h-32 w-32 relative">
+                      {isSpeakingAnimation ? (
+                        // Conversational visualizer wave heights
+                        <>
+                          <div className="w-1.5 h-8 bg-current opacity-40 rounded-full animate-pulse" style={{ color: themeColor }} />
+                          <div className="w-1.5 h-16 bg-current opacity-60 rounded-full animate-bounce" style={{ color: themeColor }} />
+                          <div className="w-1.5 h-24 bg-current rounded-full animate-pulse" style={{ color: themeColor, boxShadow: `0 0 15px ${themeColor}` }} />
+                          <div className="w-1.5 h-20 bg-current opacity-60 rounded-full animate-bounce" style={{ color: themeColor }} />
+                          <div className="w-1.5 h-10 bg-current opacity-40 rounded-full animate-pulse" style={{ color: themeColor }} />
+                        </>
+                      ) : connectionStatus === "connected" && micVolumeLevel > 2 ? (
+                        // Mic inputs frequency mapping
+                        <>
+                          <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-500" style={{ height: `${Math.min(96, 12 + micVolumeLevel * 0.9)}px` }} />
+                          <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-400" style={{ height: `${Math.min(96, 16 + micVolumeLevel * 1.6)}px` }} />
+                          <div className="w-1.5 rounded-full transition-all duration-75" style={{ height: `${Math.min(96, 24 + micVolumeLevel * 2.4)}px`, backgroundColor: themeColor, boxShadow: `0 0 12px ${themeColor}` }} />
+                          <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-400" style={{ height: `${Math.min(96, 14 + micVolumeLevel * 1.5)}px` }} />
+                          <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-500" style={{ height: `${Math.min(96, 10 + micVolumeLevel * 0.8)}px` }} />
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ${
+                            connectionStatus === "connected"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : "bg-white/5 text-slate-500"
+                          }`}>
+                            <Radio className={`w-6 h-6 ${connectionStatus === "connected" ? "animate-pulse" : ""}`} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
