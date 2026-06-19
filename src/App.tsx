@@ -600,13 +600,15 @@ export default function App() {
       const data = await res.json();
       const models = data.models || [];
       
-      // Map all models directly without any filtering
-      const allModels = models.map((m: any) => m.name);
+      // Filter models that strictly contain "live" in their name (case-insensitive)
+      const filtered = models
+        .map((m: any) => m.name)
+        .filter((name: string) => name.toLowerCase().includes("live"));
 
-      setAvailableModels(allModels);
+      setAvailableModels(filtered);
 
-      if (allModels.length === 0) {
-        alert("APIから取得したモデル一覧が空でした。");
+      if (filtered.length === 0) {
+        alert("APIから取得したモデル一覧の中に 'live' が含まれるモデルが見つかりませんでした。");
       }
     } catch (err) {
       console.error("Failed to fetch models:", err);
