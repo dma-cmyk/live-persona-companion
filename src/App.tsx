@@ -637,8 +637,8 @@ export default function App() {
             try {
               const r = await fetch(data.audioStatusUrl);
               const statusData = await r.json();
-              if (statusData.isAudioReady && statusData.audioUrl) {
-                const audio = new Audio(statusData.audioUrl);
+              if (statusData.isAudioReady) {
+                const audio = new Audio(data.wavDownloadUrl);
                 previewStopRef.current = () => {
                   try { audio.pause(); } catch(e){}
                 };
