@@ -633,19 +633,28 @@ export default function App() {
         }
         
         if (data.success && data.audioStatusUrl) {
+          let isFinished = false;
           const checkStatus = async () => {
+            if (isFinished) return;
             try {
               const r = await fetch(data.audioStatusUrl);
               const statusData = await r.json();
               if (statusData.isAudioReady) {
+                isFinished = true;
                 const audio = new Audio(data.wavDownloadUrl);
                 previewStopRef.current = () => {
                   try { audio.pause(); } catch(e){}
                 };
-                await audio.play();
+                try {
+                  await audio.play();
+                } catch (playErr) {
+                  console.warn("Audio play interrupted or blocked:", playErr);
+                }
                 setIsPreviewLoading(false);
               } else {
-                setTimeout(checkStatus, 1000);
+                if (!isFinished) {
+                  setTimeout(checkStatus, 1000);
+                }
               }
             } catch (e) {
               console.error("Voicevox status check failed:", e);
