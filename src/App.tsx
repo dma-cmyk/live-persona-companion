@@ -600,6 +600,9 @@ export default function App() {
       const data = await res.json();
       const models = data.models || [];
       
+      // Log all retrieved models to the console for local verification
+      console.log("All fetched models from Google API:", models.map((m: any) => m.name));
+      
       // Filter models that strictly contain "live" in their name (case-insensitive)
       const filtered = models
         .map((m: any) => m.name)
