@@ -1677,29 +1677,31 @@ export default function App() {
           style={{ backgroundImage: `radial-gradient(circle at 50% 40%, rgba(${themeRgb}, 0.15) 0%, transparent 70%)` }}
         />
 
-        <div className="relative flex flex-col items-center text-center space-y-10 lg:space-y-12 z-10 w-full px-6 max-w-2xl">
-          
-          {/* Camera Video Feed (replacing central wave when active) */}
-          {cameraEnabled && (
-            <div className={`relative w-full max-w-3xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border-4 transition-all duration-700 animate-in fade-in zoom-in-95 group`} style={{ borderColor: `rgba(${themeRgb}, 0.3)` }}>
-              {/* We draw the canvas feed here or we can just use the video element directly using a second video element via stream */}
-              <video 
-                autoPlay playsInline muted className={`w-full h-full object-cover ${selectedDeviceId !== 'screen' ? 'scale-x-[-1]' : ''}`} 
-                ref={node => {
-                  if (node && videoStreamRef.current && node.srcObject !== videoStreamRef.current) {
-                    node.srcObject = videoStreamRef.current;
-                  }
-                  if (videoRef) {
-                    videoRef.current = node;
-                  }
-                }} 
-              />
-              
-              <div className="absolute top-4 left-4 bg-black/60 px-3 py-1.5 rounded-lg flex items-center gap-2 backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full animate-pulse bg-emerald-500" />
-                <span className="text-xs font-mono font-bold tracking-widest text-emerald-500">LIVE</span>
-              </div>
-
+        {/* Camera/Screen Share Video Feed (Full Screen Background when active) */}
+        {cameraEnabled && (
+          <div className="absolute inset-0 w-full h-full overflow-hidden z-0 bg-[#09090b] flex items-center justify-center">
+            <video 
+              autoPlay playsInline muted 
+              className={`w-full h-full ${selectedDeviceId === 'screen' ? 'object-contain' : 'object-cover'} ${selectedDeviceId !== 'screen' ? 'scale-x-[-1]' : ''}`} 
+              ref={node => {
+                if (node && videoStreamRef.current && node.srcObject !== videoStreamRef.current) {
+                  node.srcObject = videoStreamRef.current;
+                }
+                if (videoRef) {
+                  videoRef.current = node;
+                }
+              }} 
+            />
+            {/* Subtle Overlay to enhance text readability on top */}
+            <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+            
+            {/* Floating Top indicators for Live and PiP */}
+            <div className="absolute top-4 left-4 z-20 bg-black/60 px-3 py-1.5 rounded-lg flex items-center gap-2 backdrop-blur-md border border-white/5">
+              <span className="w-2 h-2 rounded-full animate-pulse bg-emerald-500" />
+              <span className="text-xs font-mono font-bold tracking-widest text-emerald-500">LIVE SCREEN</span>
+            </div>
+            
+            <div className="absolute top-4 right-4 z-20 flex gap-2">
               <button
                 onClick={async () => {
                   if (document.pictureInPictureElement) {
@@ -1708,23 +1710,22 @@ export default function App() {
                     await videoRef.current.requestPictureInPicture().catch(console.error);
                   }
                 }}
-                className="absolute top-4 right-4 bg-black/60 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-mono font-bold tracking-widest backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-50"
+                className="bg-black/60 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-mono font-bold tracking-widest backdrop-blur-md transition-all cursor-pointer border border-white/10"
               >
                 PiP (ポップアップ)
               </button>
-              
-              {/* Overlay speaking visualizer small */}
-              {isSpeakingAnimation && (
-                <div className="absolute bottom-4 right-4 flex items-end gap-1 p-3 bg-black/50 rounded-xl backdrop-blur-sm">
-                  <div className="w-1 h-3 bg-current rounded-full animate-pulse" style={{ color: themeColor }} />
-                  <div className="w-1 h-5 bg-current rounded-full animate-bounce" style={{ color: themeColor }} />
-                  <div className="w-1 h-8 bg-current rounded-full animate-pulse" style={{ color: themeColor }} />
-                  <div className="w-1 h-4 bg-current rounded-full animate-bounce" style={{ color: themeColor }} />
-                </div>
-              )}
             </div>
-          )}
+          </div>
+        )}
 
+        {/* Radical ambient background color highlights */}
+        <div 
+          className="absolute inset-0 transition-opacity duration-700 pointer-events-none z-1"
+          style={{ backgroundImage: `radial-gradient(circle at 50% 40%, rgba(${themeRgb}, 0.15) 0%, transparent 70%)` }}
+        />
+
+        <div className="relative flex flex-col items-center text-center space-y-10 lg:space-y-12 z-10 w-full px-6 max-w-2xl">
+          
           {/* Main Visual Wave Central Portal (hidden when camera is wide) */}
           {!cameraEnabled && (
             <div className="relative select-none animate-in fade-in zoom-in-95 duration-500">
@@ -1793,7 +1794,11 @@ export default function App() {
           )}
 
           {/* Persona Voice Line Quote Subtitle Text overlay */}
-          <div className="space-y-4 px-4 w-full">
+          <div className={`space-y-4 px-6 py-5 w-full transition-all duration-300 ${
+            cameraEnabled 
+              ? "bg-black/75 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl max-w-xl mx-auto" 
+              : "px-4"
+          }`}>
             <p 
               className={`font-serif text-lg sm:text-xl md:text-2xl leading-relaxed text-center font-normal min-h-[4rem] flex items-center justify-center transition-all duration-300 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] max-w-xl mx-auto`}
               style={{ color: `rgba(${themeRgb}, 0.9)` }}
@@ -1809,7 +1814,7 @@ export default function App() {
               )}
             </p>
 
-            <div className="flex justify-center space-x-2 pt-2 items-center">
+            <div className="flex justify-center space-x-2 pt-2 items-center relative">
               <span className={`w-2 h-2 rounded-full ${
                 connectionStatus === "connected" ? "animate-pulse" : "animate-ping"
               }`} style={{
@@ -1823,6 +1828,16 @@ export default function App() {
                     : "お声がけを待っています (Listening...)"
                   : "通話機はオフラインです"}
               </span>
+
+              {/* Overlay speaking visualizer small inside subtitle card when camera is background */}
+              {cameraEnabled && isSpeakingAnimation && (
+                <div className="absolute right-0 bottom-0 flex items-end gap-0.5 opacity-80">
+                  <div className="w-0.5 h-2 bg-current rounded-full animate-pulse" style={{ color: themeColor }} />
+                  <div className="w-0.5 h-4 bg-current rounded-full animate-bounce" style={{ color: themeColor }} />
+                  <div className="w-0.5 h-6 bg-current rounded-full animate-pulse" style={{ color: themeColor }} />
+                  <div className="w-0.5 h-3 bg-current rounded-full animate-bounce" style={{ color: themeColor }} />
+                </div>
+              )}
             </div>
             
             <div className="flex justify-center items-center mt-5">
