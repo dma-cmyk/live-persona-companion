@@ -50,7 +50,7 @@ class GeminiWebSocketClient {
       if (payload.type === "setup") {
         const { systemInstruction, voiceName, customApiKey, customModel } = payload;
         // ネイティブ WebSocket で接続
-        const modelName = customModel || "models/gemini-2.0-flash-exp";
+        const modelName = customModel || "models/gemini-3.1-flash-live-preview";
         const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${customApiKey}`;
         this.ws = new WebSocket(url);
         
@@ -570,9 +570,13 @@ export default function App() {
 
   const [speakLanguage, setSpeakLanguage] = useState<string>("ja-JP");
   const [customApiKey, setCustomApiKey] = useState<string>(() => localStorage.getItem("customApiKey") || "");
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [customModel, setCustomModel] = useState<string>(() => localStorage.getItem("customModel") || "gemini-3.1-flash-live-preview");
-  const [isFetchingModels, setIsFetchingModels] = useState<boolean>(false);
+  const [customModel, setCustomModel] = useState<string>(() => {
+    const saved = localStorage.getItem("customModel");
+    if (saved === "gemini-3.1-flash-live-preview" || saved === "gemini-3-flash-live-preview") {
+      return saved;
+    }
+    return "gemini-3.1-flash-live-preview";
+  });
   
   useEffect(() => {
     localStorage.setItem("selected_persona_id", selectedPersonaId);
@@ -586,41 +590,7 @@ export default function App() {
     localStorage.setItem("customModel", customModel);
   }, [customModel]);
 
-  const fetchModels = async () => {
-    if (!customApiKey) {
-      alert("APIキーが入力されていません。設定モーダルでAPIキーを入力してから取得してください。");
-      return;
-    }
-    setIsFetchingModels(true);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${customApiKey}`);
-      if (!res.ok) {
-        throw new Error(`API returned status ${res.status}`);
-      }
-      const data = await res.json();
-      const models = data.models || [];
-      
-      // Log all retrieved models to the console for local verification
-      console.log("All fetched models from Google API:", models.map((m: any) => m.name));
-      
-      // Filter models that contain "live" in their name (case-insensitive)
-      // and strip "models/" prefix to unify layout format
-      const filtered = models
-        .map((m: any) => m.name.replace("models/", ""))
-        .filter((name: string) => name.toLowerCase().includes("live"));
 
-      setAvailableModels(filtered);
-
-      if (filtered.length === 0) {
-        alert("APIから取得したモデル一覧の中に Live機能対応モデル（2.0-flash, 2.5-flash, live, realtime）が見つかりませんでした。");
-      }
-    } catch (err) {
-      console.error("Failed to fetch models:", err);
-      alert("モデル一覧の取得に失敗しました。APIキーが正しいか確認してください。");
-    } finally {
-      setIsFetchingModels(false);
-    }
-  };
 
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -2243,24 +2213,21 @@ export default function App() {
                       placeholder="Env variable used if empty"
                       className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                     />
+                  </div>
                   <div className="pt-2">
                     <div className="flex items-center gap-2 mb-2">
                       <Cpu className="w-4 h-4 text-slate-400" />
                       <label className="text-sm text-slate-300 font-medium tracking-tight">Model</label>
                     </div>
                     <div className="relative">
-                      <input
-                        type="text"
-                        list="models-list"
+                      <select
                         value={customModel}
                         onChange={(e) => setCustomModel(e.target.value)}
-                        placeholder="gemini-3.1-flash-live-preview"
                         className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-                      />
-                      <datalist id="models-list">
-                        <option value="gemini-3.1-flash-live-preview" />
-                        <option value="gemini-3-flash-live-preview" />
-                      </datalist>
+                      >
+                        <option value="gemini-3.1-flash-live-preview">gemini-3.1-flash-live-preview</option>
+                        <option value="gemini-3-flash-live-preview">gemini-3-flash-live-preview</option>
+                      </select>
                     </div>
                   </div>
 
