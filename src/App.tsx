@@ -2361,7 +2361,7 @@ export default function App() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#111114] border border-white/10 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative"
+              className="bg-[#111114] border border-white/10 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10"
             >
               <div className="mb-4 pb-3 border-b border-white/5">
                 <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
@@ -2484,7 +2484,7 @@ export default function App() {
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                     音声ボイス
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <select
                       value={newPersona.voiceName}
                       onChange={(e) =>
@@ -2493,7 +2493,7 @@ export default function App() {
                           voiceName: e.target.value as any,
                         })
                       }
-                      className="flex-1 bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pink-400"
+                      className="flex-1 bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pink-400 w-full"
                       id="new-persona-voice-select"
                     >
                       <option value="Zephyr">Zephyr (明るい, 女性)</option>
@@ -2540,7 +2540,7 @@ export default function App() {
                       type="button"
                       disabled={isPreviewLoading}
                       onClick={() => playVoicePreview(newPersona.voiceName)}
-                      className="px-3 py-2 bg-pink-600 hover:bg-pink-500 disabled:bg-slate-700 text-white rounded-lg text-sm transition-colors flex items-center gap-1.5 min-w-[90px] justify-center"
+                      className="px-3 py-2 bg-pink-600 hover:bg-pink-500 disabled:bg-slate-700 text-white rounded-lg text-sm transition-colors flex items-center gap-1.5 min-w-[90px] justify-center w-full sm:w-auto shrink-0"
                     >
                       {isPreviewLoading ? (
                         <>
