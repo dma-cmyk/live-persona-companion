@@ -571,7 +571,7 @@ export default function App() {
   const [speakLanguage, setSpeakLanguage] = useState<string>("ja-JP");
   const [customApiKey, setCustomApiKey] = useState<string>(() => localStorage.getItem("customApiKey") || "");
   const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [customModel, setCustomModel] = useState<string>(() => localStorage.getItem("customModel") || "models/gemini-2.0-flash-live");
+  const [customModel, setCustomModel] = useState<string>(() => localStorage.getItem("customModel") || "gemini-3.1-flash-live-preview");
   const [isFetchingModels, setIsFetchingModels] = useState<boolean>(false);
   
   useEffect(() => {
@@ -2260,25 +2260,26 @@ export default function App() {
                         </button>
                       )}
                     </div>
-                    {availableModels.length > 0 ? (
-                      <select
-                        value={customModel}
-                        onChange={(e) => setCustomModel(e.target.value)}
-                        className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-                      >
-                        {availableModels.map((m) => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </select>
-                    ) : (
+                    <div className="relative">
                       <input
                         type="text"
+                        list="models-list"
                         value={customModel}
                         onChange={(e) => setCustomModel(e.target.value)}
                         placeholder="gemini-3.1-flash-live-preview"
                         className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                       />
-                    )}
+                      <datalist id="models-list">
+                        <option value="gemini-3.1-flash-live-preview" />
+                        <option value="models/gemini-2.0-flash-live" />
+                        <option value="models/gemini-2.0-flash-exp" />
+                        <option value="models/gemini-2.0-flash-realtime-exp" />
+                        <option value="models/gemini-2.5-flash" />
+                        {availableModels.filter(m => m !== "gemini-3.1-flash-live-preview").map((m) => (
+                          <option key={m} value={m} />
+                        ))}
+                      </datalist>
+                    </div>
                   </div>
 
                   <div className="pt-2">
