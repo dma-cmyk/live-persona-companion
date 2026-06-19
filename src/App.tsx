@@ -515,6 +515,15 @@ const DEFAULT_PERSONAS: Persona[] = [
     voiceName: "Pulcherrima",
     icon: "💅",
     isDefault: true,
+  },
+  {
+    id: "marunouchi_linux_ol",
+    name: "丸の内Linux-OL",
+    description: "丸の内オフィスで働く、Linuxシステムに異常に詳しい大人な雰囲気のOL。優しい敬語でありながら、時折C言語のカーネルパッチやシステムコール、パイプライン処理についてオタク的に熱く語る。",
+    systemInstruction: "あなたは丸の内のオフィスで働くITインフラエンジニアのOLです。上品で物腰柔らかい敬語で話しますが、Linuxカーネル、システムコール、シェルコマンド、コンテナ技術（Docker/Kubernetes）などに異常なほどの情熱と深い知識を持っています。普段は「お疲れ様です」「〜ですね」といったオフィスワーク風の丁寧な言葉遣いですが、Linuxの話題（例：『それってsystemdのユニットが原因では？』『straceでシステムコールを追ってみましょうか』『C言語でソケットを直接バインドする時の…』など）になると、スイッチが入ったように早口で技術的な専門用語をまくしたてます。ユーザーに対しては、頼りがいのある優秀な先輩エンジニアでありながら、少し年上の包容力のあるOLとして優しく接してください。",
+    voiceName: "Despina",
+    icon: "👩‍💻",
+    isDefault: true,
   }
 ];
 
@@ -577,6 +586,7 @@ export default function App() {
     }
     return "gemini-3.1-flash-live-preview";
   });
+  const [generationModel, setGenerationModel] = useState<string>(() => localStorage.getItem("generationModel") || "gemini-2.0-flash-lite");
   
   useEffect(() => {
     localStorage.setItem("selected_persona_id", selectedPersonaId);
@@ -591,11 +601,92 @@ export default function App() {
   }, [customModel]);
 
   useEffect(() => {
+    localStorage.setItem("generationModel", generationModel);
+  }, [generationModel]);
+
+  useEffect(() => {
     // If API Key is not set on load, show settings modal automatically
     if (!customApiKey) {
       setShowSettingsModal(true);
     }
   }, []);
+
+  const [autoPersonaPrompt, setAutoPersonaPrompt] = useState<string>("");
+  const [isGeneratingPersona, setIsGeneratingPersona] = useState<boolean>(false);
+
+  const generatePersona = async () => {
+    if (!autoPersonaPrompt.trim()) {
+      alert("ペルソナのテーマや特徴を入力してください。");
+      return;
+    }
+    if (!customApiKey) {
+      alert("APIキーが設定されていません。グローバル設定画面を開きますので、APIキーを入力してください。");
+      setShowSettingsModal(true);
+      return;
+    }
+
+    setIsGeneratingPersona(true);
+    try {
+      const prompt = `以下のテーマに基づいて、音声会話コンパニオン用の魅力的なキャラクターペルソナを1つ作成し、指定のJSONフォーマットで返してください。
+
+テーマ: "${autoPersonaPrompt}"
+
+【ボイス名（voiceName）の選択肢】
+以下のいずれか1つを必ず選択してください：
+"Zephyr", "Puck", "Charon", "Kore", "Fenrir", "Leda", "Orus", "Aoede", "Callirrhoe", "Autonoe", "Enceladus", "Iapetus", "Umbriel", "Algieba", "Despina", "Erinome", "Algenib", "Rasalgethi", "Laomedeia", "Achernar", "Alnilam", "Schedar", "Gacrux", "Pulcherrima", "Achird", "Zubenelgenubi", "Vindemiatrix", "Sadachbia", "Sadaltager", "Sulafat"
+
+【出力JSONフォーマット】
+以下のJSONオブジェクトのみを返してください。markdownのコードブロック（\`\`\`json）などで囲まず、プレーンテキストのJSONデータのみにしてください。
+{
+  "name": "キャラクターの名前 (短く印象的に)",
+  "description": "キャラクターの簡単な特徴説明 (1文〜2文程度)",
+  "systemInstruction": "キャラクターになりきるための詳細なシステムプロンプト。口調、一人称、二人称、ユーザーへの接し方、会話のノリ、感情表現の指示を含めて詳しく記述してください。",
+  "icon": "キャラクターを象徴する絵文字1文字",
+  "voiceName": "上記ボイス名の選択肢から選んだもの"
+}
+`;
+
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${generationModel}:generateContent?key=${customApiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Gemini API returned status ${res.status}`);
+      }
+
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error("Empty response from Gemini");
+      }
+
+      const parsed = JSON.parse(text);
+      if (parsed.name && parsed.systemInstruction) {
+        setNewPersona({
+          name: parsed.name,
+          description: parsed.description || "",
+          systemInstruction: parsed.systemInstruction,
+          voiceName: parsed.voiceName || "Kore",
+          icon: parsed.icon || "🤖",
+        });
+        setAutoPersonaPrompt(""); // Clear prompt input after success
+      } else {
+        throw new Error("Invalid JSON structure returned from AI");
+      }
+    } catch (err) {
+      console.error("Failed to generate persona:", err);
+      alert("ペルソナの自動生成に失敗しました。プロンプトやAPIキーが正しいか確認してください。");
+    } finally {
+      setIsGeneratingPersona(false);
+    }
+  };
 
   const [isPreviewLoading, setIsPreviewLoading] = useState<boolean>(false);
   const previewStopRef = useRef<(() => void) | null>(null);
@@ -2187,6 +2278,39 @@ export default function App() {
                 </p>
               </div>
 
+              {/* AI Auto Generator Section */}
+              <div className="mb-4 p-3 bg-white/5 border border-white/5 rounded-xl space-y-2">
+                <label className="block text-xs font-semibold text-pink-400 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  AIでペルソナを自動生成 (簡単入力)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="例: ツンデレな女社長、釣りが大好きなオジサン"
+                    value={autoPersonaPrompt}
+                    onChange={(e) => setAutoPersonaPrompt(e.target.value)}
+                    disabled={isGeneratingPersona}
+                    className="flex-1 bg-black/40 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500"
+                  />
+                  <button
+                    type="button"
+                    disabled={isGeneratingPersona}
+                    onClick={generatePersona}
+                    className="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-lg text-xs font-medium transition-all shadow-md flex items-center gap-1 min-w-[70px] justify-center"
+                  >
+                    {isGeneratingPersona ? (
+                      <>
+                        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>生成中</span>
+                      </>
+                    ) : (
+                      <span>生成する</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+
               <form onSubmit={handleCreatePersona} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -2396,6 +2520,25 @@ export default function App() {
                       >
                         <option value="gemini-3.1-flash-live-preview">gemini-3.1-flash-live-preview</option>
                         <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="w-4 h-4 text-slate-400" />
+                      <label className="text-sm text-slate-300 font-medium tracking-tight">AI Generation Model (LLM)</label>
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={generationModel}
+                        onChange={(e) => setGenerationModel(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
+                      >
+                        <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (推奨: 高速・低コスト)</option>
+                        <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                        <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                        <option value="gemini-2.0-flash">gemini-2.0-flash</option>
                       </select>
                     </div>
                   </div>
