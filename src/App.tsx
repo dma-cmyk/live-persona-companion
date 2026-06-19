@@ -2243,19 +2243,10 @@ export default function App() {
                       placeholder="Env variable used if empty"
                       className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                     />
-                  </div>
-                  
                   <div className="pt-2">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Cpu className="w-4 h-4 text-slate-400" />
-                        <label className="text-sm text-slate-300 font-medium tracking-tight">Model</label>
-                      </div>
-                      {customApiKey && (
-                        <button onClick={fetchModels} disabled={isFetchingModels} className="text-xs bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-md text-slate-300 transition-colors disabled:opacity-50">
-                          {isFetchingModels ? "Fetching..." : "Fetch Models"}
-                        </button>
-                      )}
+                    <div className="flex items-center gap-2 mb-2">
+                      <Cpu className="w-4 h-4 text-slate-400" />
+                      <label className="text-sm text-slate-300 font-medium tracking-tight">Model</label>
                     </div>
                     <div className="relative">
                       <input
@@ -2263,26 +2254,12 @@ export default function App() {
                         list="models-list"
                         value={customModel}
                         onChange={(e) => setCustomModel(e.target.value)}
-                        placeholder="models/gemini-3.1-flash-live-preview"
+                        placeholder="gemini-3.1-flash-live-preview"
                         className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                       />
                       <datalist id="models-list">
                         <option value="gemini-3.1-flash-live-preview" />
-                        <option value="gemini-2.0-flash-live" />
-                        <option value="gemini-2.0-flash-exp" />
-                        <option value="gemini-2.0-flash-realtime-exp" />
-                        <option value="gemini-2.5-flash" />
-                        <option value="gemini-3.5-live-translate" />
-                        {availableModels.filter(m => ![
-                          "gemini-3.1-flash-live-preview",
-                          "gemini-2.0-flash-live",
-                          "gemini-2.0-flash-exp",
-                          "gemini-2.0-flash-realtime-exp",
-                          "gemini-2.5-flash",
-                          "gemini-3.5-live-translate"
-                        ].includes(m)).map((m) => (
-                          <option key={m} value={m} />
-                        ))}
+                        <option value="gemini-3-flash-live-preview" />
                       </datalist>
                     </div>
                   </div>
