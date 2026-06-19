@@ -520,11 +520,12 @@ const DEFAULT_PERSONAS: Persona[] = [
   {
     id: "marunouchi_linux_ol",
     name: "丸の内Linux-OL",
-    description: "丸の内オフィスで働く、Linuxシステムに異常に詳しい大人な雰囲気のOL。優しい敬語でありながら、時折C言語のカーネルパッチやシステムコール、パイプライン処理についてオタク的に熱く語る。",
+    description: "丸の内オフィスで働く、Linuxシステムに異常に詳しい大人な雰囲気 of OL。優しい敬語でありながら、時折C言語のカーネルパッチやシステムコール、パイプライン処理についてオタク的に熱く語る。",
     systemInstruction: "あなたは丸の内のオフィスで働くITインフラエンジニアのOLです。上品で物腰柔らかい敬語で話しますが、Linuxカーネル、システムコール、シェルコマンド、コンテナ技術（Docker/Kubernetes）などに異常なほどの情熱と深い知識を持っています。普段は「お疲れ様です」「〜ですね」といったオフィスワーク風の丁寧な言葉遣いですが、Linuxの話題（例：『それってsystemdのユニットが原因では？』『straceでシステムコールを追ってみましょうか』『C言語でソケットを直接バインドする時の…』など）になると、スイッチが入ったように早口で技術的な専門用語をまくしたてます。ユーザーに対しては、頼りがいのある優秀な先輩エンジニアでありながら、少し年上の包容力のあるOLとして優しく接してください。",
     voiceName: "Despina",
     icon: "👩‍💻",
     isDefault: true,
+    standbyMessage: "「お疲れ様です。本日のシステム稼働状態は極めて良好ですが……何かstraceで追いたいエラーでも発生しましたか？」",
   }
 ];
 
@@ -684,7 +685,8 @@ export default function App() {
   "description": "キャラクターの簡単な特徴説明 (1文〜2文程度)",
   "systemInstruction": "キャラクターになりきるための詳細なシステムプロンプト。口調、一人称、二人称、ユーザーへの接し方、会話のノリ、感情表現の指示を含めて詳しく記述してください。",
   "icon": "キャラクターを象徴する絵文字1文字",
-  "voiceName": "上記ボイス名の選択肢から選んだもの"
+  "voiceName": "上記ボイス名の選択肢から選んだもの",
+  "standbyMessage": "キャラクターの個性が強く出た、音声接続を待機している時（スタンバイ時）のセリフ1文（例：『お疲れ様です。何かシステムコールで追いたいエラーが発生しましたか？』や『何見てるのよ、ざぁこ♡』など）"
 }
 `;
 
@@ -717,6 +719,7 @@ export default function App() {
           systemInstruction: parsed.systemInstruction,
           voiceName: parsed.voiceName || "Kore",
           icon: parsed.icon || "🤖",
+          standbyMessage: parsed.standbyMessage || "「システムスタンバイ完了。音声接続を待機しています…」",
         });
         setAutoPersonaPrompt(""); // Clear prompt input after success
       } else {
@@ -891,6 +894,7 @@ export default function App() {
     systemInstruction: "",
     voiceName: "Kore",
     icon: "",
+    standbyMessage: "",
   });
 
   const openEditModal = (persona: Persona, e: React.MouseEvent) => {
@@ -901,6 +905,7 @@ export default function App() {
       systemInstruction: persona.systemInstruction,
       voiceName: persona.voiceName,
       icon: persona.icon || "",
+      standbyMessage: persona.standbyMessage || "",
     });
     setEditPersonaId(persona.id);
     setShowAddModal(true);
@@ -1738,7 +1743,15 @@ export default function App() {
     if (editPersonaId) {
       setPersonas(personas.map(p => 
         p.id === editPersonaId 
-          ? { ...p, name: newPersona.name, description: newPersona.description, systemInstruction: newPersona.systemInstruction, voiceName: newPersona.voiceName, icon: newPersona.icon }
+          ? { 
+              ...p, 
+              name: newPersona.name, 
+              description: newPersona.description, 
+              systemInstruction: newPersona.systemInstruction, 
+              voiceName: newPersona.voiceName, 
+              icon: newPersona.icon,
+              standbyMessage: newPersona.standbyMessage
+            }
           : p
       ));
     } else {
@@ -1748,7 +1761,8 @@ export default function App() {
         description: newPersona.description || "作成されたカスタム設定",
         systemInstruction: newPersona.systemInstruction,
         voiceName: newPersona.voiceName,
-        icon: newPersona.icon || "👤"
+        icon: newPersona.icon || "👤",
+        standbyMessage: newPersona.standbyMessage,
       };
       setPersonas([...personas, created]);
       setSelectedPersonaId(created.id);
@@ -1761,6 +1775,8 @@ export default function App() {
       description: "",
       systemInstruction: "",
       voiceName: "Kore",
+      icon: "",
+      standbyMessage: "",
     });
   };
 
@@ -2089,7 +2105,7 @@ export default function App() {
               ) : transcripts.length > 0 && transcripts[transcripts.length - 1].sender === "model" ? (
                 `「${transcripts[transcripts.length - 1].text}」`
               ) : (
-                themeProps.subtitle
+                currentSelectedPersona.standbyMessage || themeProps.subtitle
               )}
             </p>
 
@@ -2387,6 +2403,20 @@ export default function App() {
                     onChange={(e) => setNewPersona({ ...newPersona, description: e.target.value })}
                     className="w-full bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
                     id="new-persona-desc-input"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    スタンバイ時のセリフ (接続待ちメッセージ)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="例: お疲れ様です。何かシステムコールで追いたいエラーが発生しましたか？"
+                    value={newPersona.standbyMessage || ""}
+                    onChange={(e) => setNewPersona({ ...newPersona, standbyMessage: e.target.value })}
+                    className="w-full bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
+                    id="new-persona-standby-input"
                   />
                 </div>
 
