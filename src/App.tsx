@@ -2002,12 +2002,12 @@ export default function App() {
           style={{ backgroundImage: `radial-gradient(circle at 50% 40%, rgba(${themeRgb}, 0.15) 0%, transparent 70%)` }}
         />
 
-        {/* Camera/Screen Share Video Feed (Full Screen Background when active only for screen share) */}
-        {cameraEnabled && selectedDeviceId === 'screen' && (
+        {/* Camera/Screen Share Video Feed (Full Screen Background when active) */}
+        {cameraEnabled && (
           <div className="absolute inset-0 w-full h-full overflow-hidden z-0 bg-[#09090b] flex items-center justify-center animate-fade-in">
             <video 
               autoPlay playsInline muted 
-              className="w-full h-full object-contain" 
+              className={`w-full h-full ${selectedDeviceId === 'screen' ? 'object-contain' : 'object-cover scale-x-[-1]'}`}
               ref={node => {
                 if (node && videoStreamRef.current && node.srcObject !== videoStreamRef.current) {
                   node.srcObject = videoStreamRef.current;
@@ -2017,13 +2017,15 @@ export default function App() {
                 }
               }} 
             />
-            {/* Subtle Overlay to enhance text readability on top */}
-            <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+            {/* Subtle Overlay to enhance text readability on top - camera has slightly darker overlay */}
+            <div className={`absolute inset-0 pointer-events-none transition-all duration-300 ${selectedDeviceId === 'screen' ? 'bg-black/40' : 'bg-black/60'}`} />
             
             {/* Floating Top indicators for Live and PiP */}
-            <div className="absolute top-4 left-4 z-20 bg-black/60 px-3 py-1.5 rounded-lg flex items-center gap-2 backdrop-blur-md border border-white/5">
+            <div className="absolute top-4 left-4 z-20 bg-black/70 px-3 py-1.5 rounded-lg flex items-center gap-2 backdrop-blur-md border border-white/10 shadow-lg">
               <span className="w-2 h-2 rounded-full animate-pulse bg-emerald-500" />
-              <span className="text-xs font-mono font-bold tracking-widest text-emerald-500">LIVE SCREEN (SHARE)</span>
+              <span className="text-xs font-mono font-bold tracking-widest text-emerald-400">
+                {selectedDeviceId === 'screen' ? 'LIVE SCREEN (SHARE)' : 'LIVE CAMERA (PREVIEW)'}
+              </span>
             </div>
             
             <div className="absolute top-4 right-4 z-20 flex gap-2">
@@ -2035,7 +2037,7 @@ export default function App() {
                     await videoRef.current.requestPictureInPicture().catch(console.error);
                   }
                 }}
-                className="bg-black/60 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-mono font-bold tracking-widest backdrop-blur-md transition-all cursor-pointer border border-white/10"
+                className="bg-black/70 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-mono font-bold tracking-widest backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg"
               >
                 PiP (ポップアップ)
               </button>
@@ -2053,7 +2055,7 @@ export default function App() {
           
           {/* Main Visual Wave Central Portal (hidden when camera is wide) */}
           {/* Main Visual Wave Central Portal (hidden when camera is wide for screen share) */}
-          {(!cameraEnabled || (cameraEnabled && selectedDeviceId !== 'screen')) && (
+          {(!cameraEnabled || selectedDeviceId !== 'screen') && (
             <div className="relative select-none animate-in fade-in zoom-in-95 duration-500">
               
               {/* Soft Ambient shadow ring glows */}
@@ -2082,63 +2084,38 @@ export default function App() {
                   className="w-full h-full rounded-full border-4 flex items-center justify-center p-2 transition-all duration-700 overflow-hidden relative"
                   style={{ borderColor: isSpeakingAnimation ? `rgba(${themeRgb}, 0.1)` : 'rgba(255,255,255,0.05)' }}
                 >
-                  {cameraEnabled && selectedDeviceId !== 'screen' ? (
-                    // Embedded camera window inside the central portal
-                    <div className="absolute inset-0 w-full h-full bg-[#111114]">
-                      <video 
-                        autoPlay playsInline muted 
-                        className="w-full h-full object-cover scale-x-[-1]" 
-                        ref={node => {
-                          if (node && videoStreamRef.current && node.srcObject !== videoStreamRef.current) {
-                            node.srcObject = videoStreamRef.current;
-                          }
-                          if (videoRef) {
-                            videoRef.current = node;
-                          }
-                        }} 
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/70 px-2 py-0.5 rounded-full border border-white/5 pointer-events-none">
-                        <span className="text-[8px] font-mono text-emerald-400 font-bold tracking-widest flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          CAMERA
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    // Visualizer bars or center piece
-                    <div className="flex items-end justify-center space-x-1 h-32 w-32 relative">
-                      {isSpeakingAnimation ? (
-                        // Conversational visualizer wave heights
-                        <>
-                          <div className="w-1.5 h-8 bg-current opacity-40 rounded-full animate-pulse" style={{ color: themeColor }} />
-                          <div className="w-1.5 h-16 bg-current opacity-60 rounded-full animate-bounce" style={{ color: themeColor }} />
-                          <div className="w-1.5 h-24 bg-current rounded-full animate-pulse" style={{ color: themeColor, boxShadow: `0 0 15px ${themeColor}` }} />
-                          <div className="w-1.5 h-20 bg-current opacity-60 rounded-full animate-bounce" style={{ color: themeColor }} />
-                          <div className="w-1.5 h-10 bg-current opacity-40 rounded-full animate-pulse" style={{ color: themeColor }} />
-                        </>
-                      ) : connectionStatus === "connected" && micVolumeLevel > 2 ? (
-                        // Mic inputs frequency mapping
-                        <>
-                          <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-500" style={{ height: `${Math.min(96, 12 + micVolumeLevel * 0.9)}px` }} />
-                          <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-400" style={{ height: `${Math.min(96, 16 + micVolumeLevel * 1.6)}px` }} />
-                          <div className="w-1.5 rounded-full transition-all duration-75" style={{ height: `${Math.min(96, 24 + micVolumeLevel * 2.4)}px`, backgroundColor: themeColor, boxShadow: `0 0 12px ${themeColor}` }} />
-                          <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-400" style={{ height: `${Math.min(96, 14 + micVolumeLevel * 1.5)}px` }} />
-                          <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-500" style={{ height: `${Math.min(96, 10 + micVolumeLevel * 0.8)}px` }} />
-                        </>
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ${
-                            connectionStatus === "connected"
-                              ? "bg-emerald-500/10 text-emerald-400"
-                              : "bg-white/5 text-slate-500"
-                          }`}>
-                            <Radio className={`w-6 h-6 ${connectionStatus === "connected" ? "animate-pulse" : ""}`} />
-                          </div>
+                  // Visualizer bars or center piece (always visible when portal is shown)
+                  <div className="flex items-end justify-center space-x-1 h-32 w-32 relative">
+                    {isSpeakingAnimation ? (
+                      // Conversational visualizer wave heights
+                      <>
+                        <div className="w-1.5 h-8 bg-current opacity-40 rounded-full animate-pulse" style={{ color: themeColor }} />
+                        <div className="w-1.5 h-16 bg-current opacity-60 rounded-full animate-bounce" style={{ color: themeColor }} />
+                        <div className="w-1.5 h-24 bg-current rounded-full animate-pulse" style={{ color: themeColor, boxShadow: `0 0 15px ${themeColor}` }} />
+                        <div className="w-1.5 h-20 bg-current opacity-60 rounded-full animate-bounce" style={{ color: themeColor }} />
+                        <div className="w-1.5 h-10 bg-current opacity-40 rounded-full animate-pulse" style={{ color: themeColor }} />
+                      </>
+                    ) : connectionStatus === "connected" && micVolumeLevel > 2 ? (
+                      // Mic inputs frequency mapping
+                      <>
+                        <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-500" style={{ height: `${Math.min(96, 12 + micVolumeLevel * 0.9)}px` }} />
+                        <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-400" style={{ height: `${Math.min(96, 16 + micVolumeLevel * 1.6)}px` }} />
+                        <div className="w-1.5 rounded-full transition-all duration-75" style={{ height: `${Math.min(96, 24 + micVolumeLevel * 2.4)}px`, backgroundColor: themeColor, boxShadow: `0 0 12px ${themeColor}` }} />
+                        <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-400" style={{ height: `${Math.min(96, 14 + micVolumeLevel * 1.5)}px` }} />
+                        <div className="w-1.5 rounded-full transition-all duration-75 bg-slate-500" style={{ height: `${Math.min(96, 10 + micVolumeLevel * 0.8)}px` }} />
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ${
+                          connectionStatus === "connected"
+                            ? "bg-emerald-500/10 text-emerald-400"
+                            : "bg-white/5 text-slate-500"
+                        }`}>
+                          <Radio className={`w-6 h-6 ${connectionStatus === "connected" ? "animate-pulse" : ""}`} />
                         </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -2212,17 +2189,17 @@ export default function App() {
 
         </div>
 
-        {/* Dynamic Floating Audio Controller button anchors */}
-        <div className="mt-8 lg:mt-12 lg:absolute lg:bottom-12 w-full flex justify-center space-x-4 sm:space-x-6 px-12 z-20">
+        {/* Dynamic Floating Audio Controller button anchors with premium glassmorphism dock wrapper */}
+        <div className="mt-8 lg:mt-12 lg:absolute lg:bottom-10 w-auto max-w-[95%] sm:max-w-[90%] mx-auto flex items-center justify-center space-x-3 sm:space-x-5 px-5 sm:px-8 py-3.5 rounded-[2rem] bg-black/50 backdrop-blur-md border border-white/10 shadow-[0_10px_50px_rgba(0,0,0,0.5)] z-20 transition-all duration-300">
           
           {/* Settings Modal Switch */}
           <button
             onClick={() => setShowSettingsModal(true)}
-            className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 group transition-all shadow-xl"
+            className="w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 group transition-all shadow-md"
             title="設定 (Settings)"
             id="control-settings"
           >
-            <Settings className="w-5 h-5 text-slate-400 group-hover:text-white group-hover:rotate-45 duration-300" />
+            <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-hover:text-white group-hover:rotate-45 duration-300" />
           </button>
           
           {/* Camera Access Switch */}
@@ -2234,7 +2211,7 @@ export default function App() {
                 startCamera();
               }
             }}
-            className={`w-14 h-14 rounded-full bg-white/5 border flex items-center justify-center hover:bg-white/10 group transition-all shadow-xl`}
+            className="w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/5 border flex items-center justify-center hover:bg-white/10 hover:border-white/20 group transition-all shadow-md"
             style={{ 
               color: cameraEnabled ? themeColor : '#94a3b8',
               borderColor: cameraEnabled ? `rgba(${themeRgb}, 0.3)` : 'rgba(255,255,255,0.1)'
@@ -2242,26 +2219,26 @@ export default function App() {
             title={cameraEnabled ? "カメラをオフ" : "カメラをオンにして視覚を共有"}
             id="control-camera"
           >
-            {cameraEnabled ? <Video className="w-5 h-5 group-hover:scale-110 duration-200" /> : <VideoOff className="w-5 h-5 text-slate-500" />}
+            {cameraEnabled ? <Video className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 duration-200" /> : <VideoOff className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />}
           </button>
 
           {/* Mute status switch */}
           <button
             onClick={() => setMuted(!muted)}
-            className={`w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 group transition-all shadow-xl ${
+            className={`w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 group transition-all shadow-md ${
               muted ? "text-rose-500 border-rose-500/30" : "text-slate-400 hover:text-white"
             }`}
             title={muted ? "音声をオンに戻す" : "音声を一時オフ"}
             id="control-mute"
           >
-            {muted ? <VolumeX className="w-5 h-5 text-rose-500" /> : <Volume2 className="w-5 h-5 group-hover:scale-110 duration-200 text-slate-300" />}
+            {muted ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" /> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 duration-200 text-slate-300" />}
           </button>
 
           {/* Connection Master Trigger Button */}
           <button
             onClick={connectionStatus === "connected" ? disconnectSession : connectSession}
-            className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 border-4 border-[#09090b] ring-2 ring-offset-4 ring-offset-[#09090b] outline-none cursor-pointer ${
-              connectionStatus === "connected" ? "text-white" : "text-slate-400 hover:bg-slate-705 shadow-[0_0_35px_rgba(0,0,0,0.5)] bg-slate-800 ring-slate-700" 
+            className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all duration-300 border-4 border-zinc-950 ring-2 ring-offset-4 ring-offset-zinc-950 outline-none cursor-pointer ${
+              connectionStatus === "connected" ? "text-white" : "text-slate-400 hover:bg-zinc-700 shadow-[0_0_35px_rgba(0,0,0,0.5)] bg-zinc-800 ring-zinc-700" 
             }`}
             style={connectionStatus === "connected" ? {
               backgroundColor: themeColor,
@@ -2270,11 +2247,11 @@ export default function App() {
              id="control-trigger"
           >
             {connectionStatus === "connecting" || connectionStatus === "setup" ? (
-              <div className="w-7 h-7 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              <div className="w-5 h-5 sm:w-7 sm:h-7 border-2 border-white/20 border-t-white rounded-full animate-spin" />
             ) : connectionStatus === "connected" ? (
-              <Mic className="w-8 h-8 text-white scale-110" />
+              <Mic className="w-6 h-6 sm:w-8 sm:h-8 text-white scale-110" />
             ) : (
-              <MicOff className="w-8 h-8 text-slate-300" />
+              <MicOff className="w-6 h-6 sm:w-8 sm:h-8 text-slate-300" />
             )}
           </button>
 
@@ -2293,11 +2270,11 @@ export default function App() {
                 }, 50);
               }
             }}
-            className="w-14 h-14 rounded-full bg-[#1e1e24]/60 border border-white/10 flex items-center justify-center hover:bg-white/10 text-slate-400 hover:text-white group transition-all shadow-xl"
+            className="w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 text-slate-400 hover:text-white group transition-all shadow-md"
             title="会話履歴をクリアする"
             id="control-reset"
           >
-            <RotateCcw className="w-5 h-5 group-hover:-rotate-45 duration-200 text-slate-300" />
+            <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-rotate-45 duration-200 text-slate-300" />
           </button>
 
         </div>
