@@ -2274,7 +2274,20 @@ export default function App() {
                         className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                       />
                       <datalist id="models-list">
-                        {availableModels.map((m) => (
+                        <option value="models/gemini-3.1-flash-live-preview" />
+                        <option value="models/gemini-2.0-flash-live" />
+                        <option value="models/gemini-2.0-flash-exp" />
+                        <option value="models/gemini-2.0-flash-realtime-exp" />
+                        <option value="models/gemini-2.5-flash" />
+                        <option value="models/gemini-3.5-live-translate" />
+                        {availableModels.filter(m => ![
+                          "models/gemini-3.1-flash-live-preview",
+                          "models/gemini-2.0-flash-live",
+                          "models/gemini-2.0-flash-exp",
+                          "models/gemini-2.0-flash-realtime-exp",
+                          "models/gemini-2.5-flash",
+                          "models/gemini-3.5-live-translate"
+                        ].includes(m)).map((m) => (
                           <option key={m} value={m} />
                         ))}
                       </datalist>
