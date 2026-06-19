@@ -571,7 +571,7 @@ export default function App() {
   const [speakLanguage, setSpeakLanguage] = useState<string>("ja-JP");
   const [customApiKey, setCustomApiKey] = useState<string>(() => localStorage.getItem("customApiKey") || "");
   const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [customModel, setCustomModel] = useState<string>(() => localStorage.getItem("customModel") || "gemini-3.1-flash-live-preview");
+  const [customModel, setCustomModel] = useState<string>(() => localStorage.getItem("customModel") || "models/gemini-2.0-flash-exp");
   const [isFetchingModels, setIsFetchingModels] = useState<boolean>(false);
   
   useEffect(() => {
@@ -600,39 +600,57 @@ export default function App() {
       const data = await res.json();
       const models = data.models || [];
       
-      // Filter models that contain "live" or "realtime" in their name (case-insensitive)
+      // Filter models that are compatible with Gemini Live API (2.0-flash, 2.5-flash, or explicitly named "live"/"realtime")
       const filtered = models
         .map((m: any) => m.name)
         .filter((name: string) => {
           const lower = name.toLowerCase();
-          return lower.includes("gemini") && (lower.includes("live") || lower.includes("realtime"));
+          return lower.includes("gemini") && (
+            lower.includes("2.0-flash") ||
+            lower.includes("2.5-flash") ||
+            lower.includes("live") ||
+            lower.includes("realtime")
+          );
         });
 
+      let finalModels = filtered;
       if (filtered.length === 0) {
-        // Fallback standard live models if API did not return any explicit live-named models
-        const fallbacks = [
+        // Fallback standard live models if API did not return any explicit live-compatible models
+        finalModels = [
           "models/gemini-2.0-flash-exp",
           "models/gemini-2.0-flash-realtime-exp",
           "models/gemini-2.0-flash-live",
           "models/gemini-2.5-flash"
         ];
-        setAvailableModels(fallbacks);
         console.warn("No explicit live/realtime models found in API response. Loaded fallback standard models.");
-      } else {
-        setAvailableModels(filtered);
       }
+
+      // Ensure the currently selected customModel is in the list of available models so the dropdown doesn't bug out
+      const hasCurrent = finalModels.some(m => m === customModel || m.replace("models/", "") === customModel);
+      if (!hasCurrent && customModel) {
+        const normalizedModel = customModel.startsWith("models/") ? customModel : `models/${customModel}`;
+        finalModels = [normalizedModel, ...finalModels];
+      }
+
+      setAvailableModels(finalModels);
     } catch (err) {
       console.error("Failed to fetch models:", err);
       alert("モデル一覧の取得に失敗しました。APIキーが正しいか確認してください。");
       
       // Also load fallbacks on error so the user has choices
-      const fallbacks = [
+      let errorFallbacks = [
         "models/gemini-2.0-flash-exp",
         "models/gemini-2.0-flash-realtime-exp",
         "models/gemini-2.0-flash-live",
         "models/gemini-2.5-flash"
       ];
-      setAvailableModels(fallbacks);
+      if (customModel) {
+        const normalizedModel = customModel.startsWith("models/") ? customModel : `models/${customModel}`;
+        if (!errorFallbacks.includes(normalizedModel)) {
+          errorFallbacks = [normalizedModel, ...errorFallbacks];
+        }
+      }
+      setAvailableModels(errorFallbacks);
     } finally {
       setIsFetchingModels(false);
     }
