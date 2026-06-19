@@ -598,12 +598,17 @@ export default function App() {
   }, []);
 
   const [isPreviewLoading, setIsPreviewLoading] = useState<boolean>(false);
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const previewStopRef = useRef<(() => void) | null>(null);
 
   const playVoicePreview = async (voiceName: string) => {
-    if (previewAudioRef.current) {
-      previewAudioRef.current.pause();
-      previewAudioRef.current = null;
+    // Stop any currently playing preview
+    if (previewStopRef.current) {
+      try {
+        previewStopRef.current();
+      } catch (e) {
+        console.error("Failed to stop previous preview:", e);
+      }
+      previewStopRef.current = null;
     }
 
     setIsPreviewLoading(true);
@@ -634,7 +639,9 @@ export default function App() {
               const statusData = await r.json();
               if (statusData.isAudioReady && statusData.audioUrl) {
                 const audio = new Audio(statusData.audioUrl);
-                previewAudioRef.current = audio;
+                previewStopRef.current = () => {
+                  try { audio.pause(); } catch(e){}
+                };
                 await audio.play();
                 setIsPreviewLoading(false);
               } else {
@@ -683,12 +690,36 @@ export default function App() {
         const data = await res.json();
         const part = data.candidates?.[0]?.content?.parts?.[0];
         if (part && part.inlineData && part.inlineData.data) {
-          const audioBase64 = part.inlineData.data;
-          const mimeType = part.inlineData.mimeType || "audio/mp3";
-          const audioUrl = `data:${mimeType};base64,${audioBase64}`;
-          const audio = new Audio(audioUrl);
-          previewAudioRef.current = audio;
-          await audio.play();
+          const base64Data = part.inlineData.data;
+          
+          // Reconstruct and play raw PCM audio via Web Audio API
+          const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+          const binaryString = atob(base64Data);
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          
+          const int16 = new Int16Array(bytes.buffer);
+          const f32 = new Float32Array(int16.length);
+          for (let i = 0; i < int16.length; i++) {
+            f32[i] = int16[i] / 32768.0;
+          }
+          
+          const audioBuffer = audioCtx.createBuffer(1, f32.length, 24000);
+          audioBuffer.copyToChannel(f32, 0);
+          
+          const source = audioCtx.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(audioCtx.destination);
+          
+          previewStopRef.current = () => {
+            try { source.stop(); } catch(e){}
+            try { audioCtx.close(); } catch(e){}
+          };
+          
+          source.start(0);
         } else {
           throw new Error("Audio data not found in response");
         }
