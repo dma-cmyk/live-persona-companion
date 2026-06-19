@@ -600,15 +600,22 @@ export default function App() {
       const data = await res.json();
       const models = data.models || [];
       
-      // Filter models that strictly contain "live" in their name (case-insensitive)
+      // Filter models that are compatible with Gemini Live API (2.0-flash, or containing "live"/"realtime")
       const filtered = models
         .map((m: any) => m.name)
-        .filter((name: string) => name.toLowerCase().includes("live"));
+        .filter((name: string) => {
+          const lower = name.toLowerCase();
+          return lower.includes("gemini") && (
+            lower.includes("2.0-flash") ||
+            lower.includes("live") ||
+            lower.includes("realtime")
+          );
+        });
 
       setAvailableModels(filtered);
 
       if (filtered.length === 0) {
-        alert("APIから取得したモデル一覧の中に 'live' が含まれるモデルが見つかりませんでした。");
+        alert("APIから取得したモデル一覧の中に Live機能対応モデル（2.0-flash, live, realtime）が見つかりませんでした。");
       }
     } catch (err) {
       console.error("Failed to fetch models:", err);
