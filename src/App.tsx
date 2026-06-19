@@ -572,7 +572,7 @@ export default function App() {
   const [customApiKey, setCustomApiKey] = useState<string>(() => localStorage.getItem("customApiKey") || "");
   const [customModel, setCustomModel] = useState<string>(() => {
     const saved = localStorage.getItem("customModel");
-    if (saved === "gemini-3.1-flash-live-preview" || saved === "gemini-3-flash-live-preview") {
+    if (saved === "gemini-3.1-flash-live-preview" || saved === "gemini-3-flash-live") {
       return saved;
     }
     return "gemini-3.1-flash-live-preview";
@@ -2226,7 +2226,7 @@ export default function App() {
                         className="w-full bg-black/40 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
                       >
                         <option value="gemini-3.1-flash-live-preview">gemini-3.1-flash-live-preview</option>
-                        <option value="gemini-3-flash-live-preview">gemini-3-flash-live-preview</option>
+                        <option value="gemini-3-flash-live">gemini-3-flash-live</option>
                       </select>
                     </div>
                   </div>
