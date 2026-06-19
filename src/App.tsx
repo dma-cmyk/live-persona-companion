@@ -590,7 +590,108 @@ export default function App() {
     localStorage.setItem("customModel", customModel);
   }, [customModel]);
 
+  const [isPreviewLoading, setIsPreviewLoading] = useState<boolean>(false);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  const playVoicePreview = async (voiceName: string) => {
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current = null;
+    }
+
+    setIsPreviewLoading(true);
+    try {
+      if (voiceName.startsWith("VOICEVOX_")) {
+        const speakerId = voiceName.replace("VOICEVOX_", "");
+        const text = "こんにちは、音声のテストです。";
+        
+        const res = await fetch(`https://api.tts.quest/v3/voicevox/synthesis?speaker=${speakerId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({ text }).toString(),
+        });
+        const data = await res.json();
+        
+        if (data.retryAfter) {
+          alert(`API制限中：${data.retryAfter}秒後に再度試してください。`);
+          setIsPreviewLoading(false);
+          return;
+        }
+        
+        if (data.success && data.audioStatusUrl) {
+          const checkStatus = async () => {
+            try {
+              const r = await fetch(data.audioStatusUrl);
+              const statusData = await r.json();
+              if (statusData.isAudioReady && statusData.audioUrl) {
+                const audio = new Audio(statusData.audioUrl);
+                previewAudioRef.current = audio;
+                await audio.play();
+                setIsPreviewLoading(false);
+              } else {
+                setTimeout(checkStatus, 1000);
+              }
+            } catch (e) {
+              console.error("Voicevox status check failed:", e);
+              setIsPreviewLoading(false);
+            }
+          };
+          checkStatus();
+        } else {
+          throw new Error("Voicevox API returned unsuccessful response");
+        }
+      } else {
+        if (!customApiKey) {
+          alert("APIキーが設定されていません。グローバル設定でAPIキーを設定してください。");
+          setIsPreviewLoading(false);
+          return;
+        }
+        
+        const text = speakLanguage === "ja-JP" ? "こんにちは！音声のプレビューです。" : "Hello! This is a voice preview.";
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${customApiKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text }] }],
+            generationConfig: {
+              responseModalities: ["AUDIO"],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: {
+                    voiceName: voiceName
+                  }
+                }
+              }
+            }
+          })
+        });
+        
+        if (!res.ok) {
+          throw new Error(`Gemini API returned status ${res.status}`);
+        }
+        
+        const data = await res.json();
+        const part = data.candidates?.[0]?.content?.parts?.[0];
+        if (part && part.inlineData && part.inlineData.data) {
+          const audioBase64 = part.inlineData.data;
+          const mimeType = part.inlineData.mimeType || "audio/mp3";
+          const audioUrl = `data:${mimeType};base64,${audioBase64}`;
+          const audio = new Audio(audioUrl);
+          previewAudioRef.current = audio;
+          await audio.play();
+        } else {
+          throw new Error("Audio data not found in response");
+        }
+        setIsPreviewLoading(false);
+      }
+    } catch (err) {
+      console.error("Preview failed:", err);
+      alert("プレビュー音声の生成に失敗しました。");
+      setIsPreviewLoading(false);
+    }
+  };
 
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -2102,57 +2203,77 @@ export default function App() {
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                     音声ボイス
                   </label>
-                  <select
-                    value={newPersona.voiceName}
-                    onChange={(e) =>
-                      setNewPersona({
-                        ...newPersona,
-                        voiceName: e.target.value as any,
-                      })
-                    }
-                    className="w-full bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pink-400"
-                    id="new-persona-voice-select"
-                  >
-                    <option value="Zephyr">Zephyr (明るい, 女性)</option>
-                    <option value="Puck">Puck (陽気, 男性)</option>
-                    <option value="Charon">Charon (解説風, 男性)</option>
-                    <option value="Kore">Kore (しっかり者, 女性)</option>
-                    <option value="Fenrir">Fenrir (テンション高め, 男性)</option>
-                    <option value="Leda">Leda (若々しい, 女性)</option>
-                    <option value="Orus">Orus (しっかり者, 男性)</option>
-                    <option value="Aoede">Aoede (軽快な, 女性)</option>
-                    <option value="Callirrhoe">Callirrhoe (のんびりした, 女性)</option>
-                    <option value="Autonoe">Autonoe (明るい, 女性)</option>
-                    <option value="Enceladus">Enceladus (ささやき声, 男性)</option>
-                    <option value="Iapetus">Iapetus (クリアな, 男性)</option>
-                    <option value="Umbriel">Umbriel (のんびりした, 男性)</option>
-                    <option value="Algieba">Algieba (滑らかな, 男性)</option>
-                    <option value="Despina">Despina (滑らかな, 女性)</option>
-                    <option value="Erinome">Erinome (クリアな, 女性)</option>
-                    <option value="Algenib">Algenib (しわがれ気味, 男性)</option>
-                    <option value="Rasalgethi">Rasalgethi (解説風, 男性)</option>
-                    <option value="Laomedeia">Laomedeia (陽気, 女性)</option>
-                    <option value="Achernar">Achernar (柔らかい, 女性)</option>
-                    <option value="Alnilam">Alnilam (しっかり者, 男性)</option>
-                    <option value="Schedar">Schedar (落ち着いた, 男性)</option>
-                    <option value="Gacrux">Gacrux (成熟した, 女性)</option>
-                    <option value="Pulcherrima">Pulcherrima (まっすぐな, 女性)</option>
-                    <option value="Achird">Achird (フレンドリー, 男性)</option>
-                    <option value="Zubenelgenubi">Zubenelgenubi (カジュアル, 男性)</option>
-                    <option value="Vindemiatrix">Vindemiatrix (優しい, 女性)</option>
-                    <option value="Sadachbia">Sadachbia (活発な, 男性)</option>
-                    <option value="Sadaltager">Sadaltager (知的な, 男性)</option>
-                    <option value="Sulafat">Sulafat (温かい, 女性)</option>
-                    <optgroup label="VoiceVox (tts.quest)">
-                      {VOICEVOX_SPEAKERS.map((v) =>
-                        v.styles.map((style) => (
-                          <option key={style.id} value={`VOICEVOX_${style.id}`}>
-                            {v.name} ({style.name})
-                          </option>
-                        ))
+                  <div className="flex gap-2">
+                    <select
+                      value={newPersona.voiceName}
+                      onChange={(e) =>
+                        setNewPersona({
+                          ...newPersona,
+                          voiceName: e.target.value as any,
+                        })
+                      }
+                      className="flex-1 bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pink-400"
+                      id="new-persona-voice-select"
+                    >
+                      <option value="Zephyr">Zephyr (明るい, 女性)</option>
+                      <option value="Puck">Puck (陽気, 男性)</option>
+                      <option value="Charon">Charon (解説風, 男性)</option>
+                      <option value="Kore">Kore (しっかり者, 女性)</option>
+                      <option value="Fenrir">Fenrir (テンション高め, 男性)</option>
+                      <option value="Leda">Leda (若々しい, 女性)</option>
+                      <option value="Orus">Orus (しっかり者, 男性)</option>
+                      <option value="Aoede">Aoede (軽快な, 女性)</option>
+                      <option value="Callirrhoe">Callirrhoe (のんびりした, 女性)</option>
+                      <option value="Autonoe">Autonoe (明るい, 女性)</option>
+                      <option value="Enceladus">Enceladus (ささやき声, 男性)</option>
+                      <option value="Iapetus">Iapetus (クリアな, 男性)</option>
+                      <option value="Umbriel">Umbriel (のんびりした, 男性)</option>
+                      <option value="Algieba">Algieba (滑らかな, 男性)</option>
+                      <option value="Despina">Despina (滑らかな, 女性)</option>
+                      <option value="Erinome">Erinome (クリアな, 女性)</option>
+                      <option value="Algenib">Algenib (しわがれ気味, 男性)</option>
+                      <option value="Rasalgethi">Rasalgethi (解説風, 男性)</option>
+                      <option value="Laomedeia">Laomedeia (陽気, 女性)</option>
+                      <option value="Achernar">Achernar (柔らかい, 女性)</option>
+                      <option value="Alnilam">Alnilam (しっかり者, 男性)</option>
+                      <option value="Schedar">Schedar (落ち着いた, 男性)</option>
+                      <option value="Gacrux">Gacrux (成熟した, 女性)</option>
+                      <option value="Pulcherrima">Pulcherrima (まっすぐな, 女性)</option>
+                      <option value="Achird">Achird (フレンドリー, 男性)</option>
+                      <option value="Zubenelgenubi">Zubenelgenubi (カジュアル, 男性)</option>
+                      <option value="Vindemiatrix">Vindemiatrix (優しい, 女性)</option>
+                      <option value="Sadachbia">Sadachbia (活発な, 男性)</option>
+                      <option value="Sadaltager">Sadaltager (知的な, 男性)</option>
+                      <option value="Sulafat">Sulafat (温かい, 女性)</option>
+                      <optgroup label="VoiceVox (tts.quest)">
+                        {VOICEVOX_SPEAKERS.map((v) =>
+                          v.styles.map((style) => (
+                            <option key={style.id} value={`VOICEVOX_${style.id}`}>
+                              {v.name} ({style.name})
+                            </option>
+                          ))
+                        )}
+                      </optgroup>
+                    </select>
+                    <button
+                      type="button"
+                      disabled={isPreviewLoading}
+                      onClick={() => playVoicePreview(newPersona.voiceName)}
+                      className="px-3 py-2 bg-pink-600 hover:bg-pink-500 disabled:bg-slate-700 text-white rounded-lg text-sm transition-colors flex items-center gap-1.5 min-w-[90px] justify-center"
+                    >
+                      {isPreviewLoading ? (
+                        <>
+                          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>生成中</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-4 h-4" />
+                          <span>試聴</span>
+                        </>
                       )}
-                    </optgroup>
-                  </select>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="pt-4 flex items-center justify-end gap-2.5 border-t border-white/5">
